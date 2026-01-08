@@ -76,6 +76,13 @@ if ! command -v curl &> /dev/null; then
     error "curl is not installed. Please install it first."
 fi
 
+# Check if Git LFS is installed
+HAS_LFS=false
+if command -v git-lfs &> /dev/null || command -v git lfs &> /dev/null; then
+    HAS_LFS=true
+    info "Git LFS is installed"
+fi
+
 # Get current directory (absolute path)
 CURRENT_DIR=$(pwd -P)
 info "Working directory: $CURRENT_DIR"
@@ -165,6 +172,56 @@ else
     info "Git repository already initialized"
 fi
 
+# Check for large files (>100MB) and set up LFS if needed
+LARGE_FILE_THRESHOLD=104857600  # 100MB in bytes
+LARGE_FILES=$(find . -type f -size +${LARGE_FILE_THRESHOLD}c -not -path './.git/*' 2>/dev/null | head -20)
+
+if [ -n "$LARGE_FILES" ] && [ "$HAS_LFS" = true ]; then
+    info "Large files detected (>100MB), setting up Git LFS..."
+    
+    # Initialize LFS in repository if not already initialized
+    if ! git lfs env &>/dev/null; then
+        git lfs install --local 2>/dev/null || git lfs install 2>/dev/null || true
+        info "Git LFS initialized in repository"
+    fi
+    
+    # Detect file types and create .gitattributes
+    info "Detecting large file types and configuring LFS tracking..."
+    
+    # Get unique file extensions from large files
+    EXTENSIONS=$(echo "$LARGE_FILES" | sed 's/.*\.//' | sort -u | grep -v '^$' | head -10)
+    
+    if [ -n "$EXTENSIONS" ]; then
+        # Create or update .gitattributes
+        if [ ! -f .gitattributes ]; then
+            touch .gitattributes
+        fi
+        
+        # Add LFS tracking for each extension found
+        for ext in $EXTENSIONS; do
+            if ! grep -q "\.${ext}" .gitattributes 2>/dev/null; then
+                echo "*.${ext} filter=lfs diff=lfs merge=lfs -text" >> .gitattributes
+                info "  Added LFS tracking for *.${ext}"
+            fi
+        done
+        
+        # Also track specific large files by name if they don't match common patterns
+        for file in $LARGE_FILES; do
+            filename=$(basename "$file")
+            if ! grep -q "$filename" .gitattributes 2>/dev/null && ! echo "$EXTENSIONS" | grep -q "$(echo "$filename" | sed 's/.*\.//')"; then
+                echo "$filename filter=lfs diff=lfs merge=lfs -text" >> .gitattributes
+                info "  Added LFS tracking for $filename"
+            fi
+        done
+        
+        success "Git LFS tracking configured in .gitattributes"
+    fi
+elif [ -n "$LARGE_FILES" ] && [ "$HAS_LFS" = false ]; then
+    info "Warning: Large files detected (>100MB) but Git LFS is not installed."
+    info "Consider installing Git LFS: git_install"
+    info "Files over 100MB may fail to push to GitHub without LFS."
+fi
+
 # Determine default branch name (prefer main, fallback to master)
 # Check what the default branch is set to, or use main
 DEFAULT_BRANCH=$(git config --global init.defaultBranch 2>/dev/null || echo "main")
@@ -201,7 +258,32 @@ fi
 # Stage and commit files if any exist
 if [ -n "$(find . -maxdepth 1 -not -name '.git' -not -name '.' -not -name '..' 2>/dev/null)" ]; then
     info "Staging files..."
-    git add .
+    
+    # If .gitattributes was created, add it first
+    if [ -f .gitattributes ] && ! git ls-files --error-unmatch .gitattributes &>/dev/null; then
+        info "Staging .gitattributes for LFS configuration..."
+        git add .gitattributes
+        if [ "$HAS_COMMITS" = false ]; then
+            git commit -m "Configure Git LFS tracking" || true
+            HAS_COMMITS=true
+        else
+            git commit -m "Configure Git LFS tracking" || true
+        fi
+    fi
+    
+    # Stage all files (including LFS-tracked files)
+    # Note: If files are in .gitignore but should be tracked by LFS, 
+    # they may need to be force-added manually with: git add -f <file>
+    set +e
+    git add . 2>&1 | while IFS= read -r line; do
+        if echo "$line" | grep -q "ignored by"; then
+            info "Note: $line"
+            info "  If this file should be tracked by LFS, use: git add -f <file>"
+        else
+            echo "$line"
+        fi
+    done
+    set -e
     
     # Check if there are changes to commit
     if ! git diff --staged --quiet 2>/dev/null || [ -n "$(git ls-files --others --exclude-standard)" ]; then
@@ -239,19 +321,56 @@ if [ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" ]; then
     CURRENT_BRANCH="$DEFAULT_BRANCH"
 fi
 
+# Configure LFS credentials if LFS is being used
+if [ "$HAS_LFS" = true ] && [ -f .gitattributes ]; then
+    info "Configuring Git LFS credentials for push..."
+    
+    # Disable LFS locking API (not needed for GitHub)
+    git config lfs.https://github.com/${USERNAME}/${REPO_NAME}.git/info/lfs.locksverify false 2>/dev/null || true
+    
+    # Configure Git credential helper if not already configured
+    if ! git config --global credential.helper &>/dev/null; then
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            git config --global credential.helper osxkeychain 2>/dev/null || \
+            git config --global credential.helper store 2>/dev/null || true
+        else
+            git config --global credential.helper store 2>/dev/null || true
+        fi
+    fi
+    
+    # Store credentials for Git LFS
+    printf "protocol=https\nhost=github.com\nusername=${USERNAME}\npassword=${PAT}\n" | git credential approve 2>/dev/null || true
+    
+    # Use clean URL for LFS
+    git remote set-url origin "https://github.com/${USERNAME}/${REPO_NAME}.git"
+else
+    # Use PAT in URL for regular git push
+    git remote set-url origin "https://${PAT}@github.com/${USERNAME}/${REPO_NAME}.git"
+fi
+
 # Push to remote
 info "Pushing to remote repository..."
 info "Pushing branch: $CURRENT_BRANCH"
+
+if [ "$HAS_LFS" = true ] && [ -f .gitattributes ]; then
+    info "Pushing with Git LFS support..."
+fi
 
 set +e
 git push -u origin "$CURRENT_BRANCH" 2>&1
 PUSH_ERROR=$?
 set -e
 
+# Restore clean remote URL (without PAT for security)
+git remote set-url origin "https://github.com/${USERNAME}/${REPO_NAME}.git"
+
 if [ $PUSH_ERROR -eq 0 ]; then
     success "Successfully pushed to remote repository"
     success "\nRepository is ready at: https://github.com/$USER_REPO"
+    if [ "$HAS_LFS" = true ] && [ -f .gitattributes ]; then
+        info "Large files were pushed using Git LFS"
+    fi
 else
-    error "Failed to push to remote repository.\n\nThis might happen if:\n1. The repository already exists on GitHub with different content\n2. Network connectivity issues\n3. Authentication problems\n\nTry manually: git push -u origin $CURRENT_BRANCH"
+    error "Failed to push to remote repository.\n\nThis might happen if:\n1. The repository already exists on GitHub with different content\n2. Network connectivity issues\n3. Authentication problems\n4. Large files without LFS (files >100MB require LFS)\n\nTry manually: git push -u origin $CURRENT_BRANCH"
 fi
 

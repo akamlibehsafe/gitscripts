@@ -160,6 +160,33 @@ fi
 
 info "Using PAT from: $PAT_VAR"
 
+# Check if Git LFS is installed and configure credentials if needed
+if command -v git-lfs &> /dev/null || command -v git lfs &> /dev/null; then
+    # Check if there are LFS files in the repository
+    if git lfs ls-files &>/dev/null && [ -n "$(git lfs ls-files 2>/dev/null)" ]; then
+        info "Git LFS files detected, configuring LFS credentials..."
+        
+        # Disable LFS locking API (not needed for GitHub)
+        git config lfs.https://github.com/${USERNAME}/${REPO_NAME}.git/info/lfs.locksverify false 2>/dev/null || true
+        
+        # Configure Git credential helper if not already configured
+        if ! git config --global credential.helper &>/dev/null; then
+            # Try osxkeychain on macOS, fallback to store
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                git config --global credential.helper osxkeychain 2>/dev/null || \
+                git config --global credential.helper store 2>/dev/null || true
+            else
+                git config --global credential.helper store 2>/dev/null || true
+            fi
+        fi
+        
+        # Store credentials for Git LFS
+        printf "protocol=https\nhost=github.com\nusername=${USERNAME}\npassword=${PAT}\n" | git credential approve 2>/dev/null || true
+        
+        info "LFS credentials configured"
+    fi
+fi
+
 # Get current branch
 CURRENT_BRANCH=$(git branch --show-current)
 if [ -z "$CURRENT_BRANCH" ]; then
@@ -227,21 +254,40 @@ else
     info "No changes to commit"
 fi
 
-# Update remote URL with PAT for authentication (temporarily)
+# Store original remote URL
 ORIGINAL_REMOTE=$(git remote get-url origin)
-AUTH_REMOTE="https://${PAT}@github.com/${USERNAME}/${REPO_NAME}.git"
 
-# Set remote with authentication
-git remote set-url origin "$AUTH_REMOTE"
+# For LFS, we use clean URL with credential helper
+# For regular git, we can use PAT in URL temporarily
+# Check if we have LFS files
+HAS_LFS_FILES=false
+if command -v git-lfs &> /dev/null || command -v git lfs &> /dev/null; then
+    if git lfs ls-files &>/dev/null && [ -n "$(git lfs ls-files 2>/dev/null)" ]; then
+        HAS_LFS_FILES=true
+    fi
+fi
+
+# Set remote URL appropriately
+if [ "$HAS_LFS_FILES" = true ]; then
+    # For LFS, use clean URL (credentials handled by credential helper)
+    git remote set-url origin "https://github.com/${USERNAME}/${REPO_NAME}.git"
+else
+    # For regular git, use PAT in URL temporarily
+    AUTH_REMOTE="https://${PAT}@github.com/${USERNAME}/${REPO_NAME}.git"
+    git remote set-url origin "$AUTH_REMOTE"
+fi
 
 # Push to remote
 info "Pushing to remote repository..."
+if [ "$HAS_LFS_FILES" = true ]; then
+    info "Pushing with Git LFS support..."
+fi
 set +e
 git push -u origin "$CURRENT_BRANCH" 2>&1
 PUSH_ERROR=$?
 set -e
 
-# Restore original remote URL (without PAT in URL for security)
+# Restore original remote URL
 git remote set-url origin "$ORIGINAL_REMOTE"
 
 if [ $PUSH_ERROR -eq 0 ]; then

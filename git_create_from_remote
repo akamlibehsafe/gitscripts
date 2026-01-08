@@ -70,6 +70,13 @@ if ! command -v git &> /dev/null; then
     error "Git is not installed. Please run git_install first."
 fi
 
+# Check if Git LFS is installed
+HAS_LFS=false
+if command -v git-lfs &> /dev/null || command -v git lfs &> /dev/null; then
+    HAS_LFS=true
+    info "Git LFS is installed"
+fi
+
 # Check if repository directory already exists
 if [ -d "$REPO_NAME" ]; then
     error "Directory '$REPO_NAME' already exists.\nPlease remove it or choose a different location."
@@ -84,6 +91,27 @@ info "Cloning repository from GitHub..."
 
 # Construct the clone URL with authentication
 CLONE_URL="https://${PAT}@github.com/${USER_REPO}.git"
+
+# Configure Git LFS credentials before cloning if LFS is available
+if [ "$HAS_LFS" = true ]; then
+    info "Configuring Git LFS for clone..."
+    
+    # Configure Git credential helper if not already configured
+    if ! git config --global credential.helper &>/dev/null; then
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            git config --global credential.helper osxkeychain 2>/dev/null || \
+            git config --global credential.helper store 2>/dev/null || true
+        else
+            git config --global credential.helper store 2>/dev/null || true
+        fi
+    fi
+    
+    # Store credentials for Git LFS
+    printf "protocol=https\nhost=github.com\nusername=${USERNAME}\npassword=${PAT}\n" | git credential approve 2>/dev/null || true
+    
+    # Disable LFS locking API (not needed for GitHub)
+    git config --global lfs.https://github.com/${USERNAME}/${REPO_NAME}.git/info/lfs.locksverify false 2>/dev/null || true
+fi
 
 # Attempt to clone (temporarily disable set -e for error handling)
 set +e
@@ -123,10 +151,41 @@ if [ -d "$REPO_NAME" ]; then
         fi
     fi
     
+    # Initialize and pull LFS files if LFS is available and repository uses it
+    if [ "$HAS_LFS" = true ]; then
+        if [ -f .gitattributes ] || git lfs ls-files &>/dev/null; then
+            info "Repository uses Git LFS, pulling LFS files..."
+            
+            # Initialize LFS in the cloned repository
+            git lfs install --local 2>/dev/null || git lfs install 2>/dev/null || true
+            
+            # Pull LFS files
+            set +e
+            git lfs pull 2>&1 | head -20
+            LFS_PULL_ERROR=$?
+            set -e
+            
+            if [ $LFS_PULL_ERROR -eq 0 ]; then
+                success "Git LFS files pulled successfully"
+            else
+                info "Note: Some LFS files may not have been pulled. This is normal if the repository has many large files."
+            fi
+        fi
+    fi
+    
+    # Update remote URL to clean format (without PAT for security)
+    git remote set-url origin "https://github.com/${USER_REPO}.git"
+    
     # Show repository status
     info "\nRepository information:"
     echo "  Remote URL: $(git remote get-url origin)"
     echo "  Current branch: $(git branch --show-current)"
+    if [ "$HAS_LFS" = true ] && ([ -f .gitattributes ] || git lfs ls-files &>/dev/null 2>&1); then
+        LFS_FILE_COUNT=$(git lfs ls-files 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$LFS_FILE_COUNT" -gt 0 ]; then
+            echo "  Git LFS files: $LFS_FILE_COUNT"
+        fi
+    fi
     echo "  Repository ready for editing!"
     
     success "\nRepository cloned and ready at: $CLONED_DIR"
