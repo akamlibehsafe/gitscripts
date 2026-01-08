@@ -398,7 +398,41 @@ echo ""
 
 success "Installation and setup instructions complete!"
 echo ""
-info "You can now use the Git automation scripts:"
+
+# Check if we're in the gitscripts repository and offer to set up symlinks
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+SETUP_SCRIPT="$SCRIPT_DIR/setup_symlinks.sh"
+
+if [ -f "$SETUP_SCRIPT" ]; then
+    section "Script Symlink Setup"
+    info "Detected Git scripts repository at: $SCRIPT_DIR"
+    echo ""
+    info "To use the Git automation scripts from anywhere, you need to create symlinks in ~/bin/"
+    echo ""
+    prompt "Would you like to set up symlinks now? (Y/n)"
+    read -r SETUP_SYMLINKS
+    
+    if [[ ! "$SETUP_SYMLINKS" =~ ^[Nn]$ ]]; then
+        info "Running symlink setup script..."
+        echo ""
+        bash "$SETUP_SCRIPT"
+        echo ""
+        success "Symlinks set up successfully!"
+        echo ""
+        info "You can now use the Git automation scripts from anywhere:"
+    else
+        info "Symlink setup skipped. You can run it later with:"
+        echo "  cd $SCRIPT_DIR"
+        echo "  ./setup_symlinks.sh"
+        echo ""
+        info "For now, you can use the scripts from the repository directory:"
+    fi
+else
+    info "Note: If you have the gitscripts repository, run setup_symlinks.sh to create symlinks in ~/bin/"
+    echo ""
+    info "You can use the Git automation scripts:"
+fi
+
 echo "  • git_create_from_local <user/repo>"
 echo "  • git_create_from_remote <user/repo>"
 echo "  • git_push [directory]"

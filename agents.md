@@ -3,6 +3,72 @@
 ## Overview
 This document specifies four Git automation scripts for managing repositories across two GitHub accounts: `fortegb` and `akamlibehsafe`. Both accounts have Personal Access Tokens (PATs) stored as local bash variables: `GH_TOKEN_akamlibehsafe` and `GH_TOKEN_fortegb`.
 
+## Installation and Setup
+
+### Repository Structure
+- Scripts are kept in the repository folder (version-controlled)
+- Symlinks are created in `~/bin/` pointing to the repository scripts
+- This allows scripts to be updated via `git pull` while remaining accessible system-wide
+
+### Setup Process
+
+**On a Fresh Mac:**
+
+1. **Clone the repository:**
+   ```bash
+   cd ~/Documents  # or your preferred location
+   git clone <repository-url> gitscripts
+   cd gitscripts
+   ```
+
+2. **Run the installation script:**
+   ```bash
+   ./git_install
+   ```
+   
+   This will:
+   - Install Git, Git LFS, GitHub CLI, and dependencies
+   - Provide PAT configuration instructions
+   - **Automatically offer to set up symlinks** at the end (if run from repository directory)
+   
+   **Accept the symlink setup prompt** to complete installation in one step.
+
+3. **If you skipped symlink setup, run manually:**
+   ```bash
+   ./setup_symlinks.sh
+   ```
+   
+   This script will:
+   - Create `~/bin/` directory if it doesn't exist
+   - Create symlinks for all scripts in `~/bin/`
+   - Add `~/bin/` to PATH (if not already present)
+   - Verify all symlinks are working
+
+4. **Ensure `~/bin/` is in your PATH:**
+   - The setup script attempts to add this automatically
+   - If needed, manually add to `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:
+     ```bash
+     export PATH="$HOME/bin:$PATH"
+     ```
+
+5. **Reload your shell configuration:**
+   ```bash
+   source ~/.bashrc  # or ~/.zshrc
+   ```
+
+### Updating Scripts
+After pulling updates from the repository:
+```bash
+cd /path/to/gitscripts
+git pull
+```
+Symlinks automatically point to the updated scripts - no re-setup needed!
+
+### Script Location
+- **Repository location:** `/path/to/gitscripts/` (where scripts are stored)
+- **Symlink location:** `~/bin/` (where scripts are accessed from)
+- **Usage:** Scripts are called by name (e.g., `git_create_from_local`) assuming `~/bin/` is in PATH
+
 ## Authentication
 - **Account 1**: `fortegb` → PAT variable: `GH_TOKEN_fortegb`
 - **Account 2**: `akamlibehsafe` → PAT variable: `GH_TOKEN_akamlibehsafe`

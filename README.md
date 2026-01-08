@@ -6,7 +6,7 @@ A collection of bash scripts for automating Git and GitHub operations across mul
 
 These scripts provide a streamlined workflow for managing GitHub repositories across two accounts: `fortegb` and `akamlibehsafe`. They automatically handle authentication, repository creation, cloning, and pushing operations.
 
-**Note:** These scripts are designed to be installed in `~/bin/` and all usage examples assume this location. See the Setup section for installation instructions.
+**Note:** These scripts are designed to be kept in the repository folder and accessed via symlinks in `~/bin/`. This allows you to keep the scripts version-controlled while using them from anywhere. See the Setup section for installation instructions.
 
 ## Scripts
 
@@ -109,24 +109,26 @@ Helper script to verify PAT tokens are configured correctly.
 
 ## Setup
 
-**Note:** These scripts assume they are located in `~/bin/`. Make sure to copy or move the scripts to `~/bin/` and ensure `~/bin/` is in your PATH. If `~/bin/` doesn't exist, create it:
-```bash
-mkdir -p ~/bin
-```
-
-Add to your shell configuration file (`~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`):
-```bash
-export PATH="$HOME/bin:$PATH"
-```
-
 ### 1. Install Dependencies
 
-Run the installation script:
+**On a fresh Mac, first clone or download this repository:**
+```bash
+cd ~/Documents  # or wherever you want the repository
+git clone <repository-url> gitscripts
+cd gitscripts
+```
+
+**Then run the installation script:**
 ```bash
 ./git_install
 ```
 
-This will install all required tools and provide instructions for PAT configuration.
+This will:
+- Install Git, Git LFS, GitHub CLI, and dependencies
+- Provide instructions for PAT configuration
+- **Automatically offer to set up symlinks** (if run from the repository directory)
+
+**Note:** If `git_install` detects it's in the gitscripts repository, it will automatically offer to run `setup_symlinks.sh` at the end. You can accept this to complete the setup in one go.
 
 ### 2. Configure Personal Access Tokens
 
@@ -159,36 +161,82 @@ This will install all required tools and provide instructions for PAT configurat
    ./verify_pat.sh
    ```
 
-### 3. Install Scripts to ~/bin/
+### 3. Set Up Symlinks to ~/bin/
 
-Copy the scripts to `~/bin/` (create the directory if it doesn't exist):
+**Recommended Approach:** Keep scripts in the repository folder and create symlinks in `~/bin/`.
+
+This approach:
+- Keeps scripts version-controlled in the repository
+- Allows easy updates via `git pull`
+- Makes scripts available system-wide via symlinks
+
+**Automatic Setup (Recommended):**
+
+If you ran `git_install` from the repository directory, it will automatically offer to set up symlinks at the end. Simply accept the prompt.
+
+**Manual Setup:**
+
+If you skipped the automatic setup or need to recreate symlinks:
 
 ```bash
-mkdir -p ~/bin
-cp git_* verify_pat.sh ~/bin/
-chmod +x ~/bin/git_* ~/bin/verify_pat.sh
+cd /path/to/gitscripts
+./setup_symlinks.sh
 ```
 
-**Important:** The scripts are designed to be run from `~/bin/`, and all documentation examples assume this location. Make sure `~/bin/` is in your PATH (see Setup section above).
+This script will:
+- Create `~/bin/` directory if it doesn't exist
+- Create symlinks in `~/bin/` pointing to scripts in the repository
+- Add `~/bin/` to your PATH (if not already present)
+- Verify all symlinks are working
+
+**Alternative: Manual Setup**
+
+If you prefer to set up symlinks manually:
+
+```bash
+# Create ~/bin if it doesn't exist
+mkdir -p ~/bin
+
+# Navigate to the repository folder
+cd /path/to/gitscripts
+
+# Create symlinks
+ln -s "$(pwd)/git_install" ~/bin/git_install
+ln -s "$(pwd)/git_create_from_local" ~/bin/git_create_from_local
+ln -s "$(pwd)/git_create_from_remote" ~/bin/git_create_from_remote
+ln -s "$(pwd)/git_push" ~/bin/git_push
+ln -s "$(pwd)/verify_pat.sh" ~/bin/verify_pat.sh
+
+# Ensure ~/bin is in PATH (add to ~/.bashrc, ~/.bash_profile, or ~/.zshrc)
+export PATH="$HOME/bin:$PATH"
+```
+
+**Important:** 
+- Scripts remain in the repository folder (version-controlled)
+- Symlinks in `~/bin/` point to the repository scripts
+- All usage examples assume scripts are accessible via `~/bin/` in PATH
+- After updating the repository (`git pull`), symlinks automatically point to the updated scripts
 
 ## Usage Examples
+
+**Note:** All examples assume scripts are accessible via `~/bin/` in your PATH (via symlinks).
 
 ### Create a new repository from local folder
 ```bash
 cd /path/to/my/project
-./git_create_from_local fortegb/my-new-repo
+git_create_from_local fortegb/my-new-repo
 ```
 
 ### Clone an existing repository
 ```bash
-./git_create_from_remote akamlibehsafe/existing-repo
+git_create_from_remote akamlibehsafe/existing-repo
 cd existing-repo
 ```
 
 ### Make changes and push
 ```bash
 echo "New content" >> README.md
-./git_push -m "Update README"
+git_push -m "Update README"
 ```
 
 ### Complete workflow
@@ -197,16 +245,16 @@ echo "New content" >> README.md
 mkdir my-project
 cd my-project
 echo "# My Project" > README.md
-./git_create_from_local fortegb/my-project
+git_create_from_local fortegb/my-project
 
 # 2. Clone it elsewhere
 cd /tmp
-./git_create_from_remote fortegb/my-project
+git_create_from_remote fortegb/my-project
 cd my-project
 
 # 3. Make changes and push
 echo "Update" >> README.md
-./git_push -m "Add update"
+git_push -m "Add update"
 ```
 
 ## Features
@@ -254,7 +302,7 @@ echo "Update" >> README.md
 
 Use the verification script to check your setup:
 ```bash
-./verify_pat.sh
+verify_pat.sh
 ```
 
 ## Testing
@@ -268,9 +316,28 @@ Comprehensive test scenarios are documented in `TEST_SCENARIOS.md`. All scripts 
 - `git_create_from_remote` - Clone existing repository
 - `git_push` - Commit and push changes
 - `verify_pat.sh` - PAT token verification helper
+- `setup_symlinks.sh` - **Setup script to create symlinks in ~/bin/**
 - `TEST_SCENARIOS.md` - Comprehensive test documentation
 - `agents.md` - Detailed specification document
 - `.gitignore` - Git ignore file (excludes PATs.md)
+
+## Updating Scripts
+
+Since scripts are kept in the repository folder and accessed via symlinks:
+
+1. **Update the repository:**
+   ```bash
+   cd /path/to/gitscripts
+   git pull
+   ```
+
+2. **Symlinks automatically point to updated scripts** - no need to re-run setup!
+
+3. **If you need to recreate symlinks** (e.g., after moving the repository):
+   ```bash
+   cd /path/to/gitscripts
+   ./setup_symlinks.sh
+   ```
 
 ## License
 
