@@ -401,11 +401,12 @@ echo ""
 
 # Check if we're in the gitscripts repository and offer to set up symlinks
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-SETUP_SCRIPT="$SCRIPT_DIR/setup_symlinks.sh"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+SETUP_SCRIPT="$REPO_ROOT/setup_symlinks.sh"
 
 if [ -f "$SETUP_SCRIPT" ]; then
     section "Script Symlink Setup"
-    info "Detected Git scripts repository at: $SCRIPT_DIR"
+    info "Detected Git scripts repository at: $REPO_ROOT"
     echo ""
     info "To use the Git automation scripts from anywhere, you need to create symlinks in ~/bin/"
     echo ""
@@ -422,7 +423,7 @@ if [ -f "$SETUP_SCRIPT" ]; then
         info "You can now use the Git automation scripts from anywhere:"
     else
         info "Symlink setup skipped. You can run it later with:"
-        echo "  cd $SCRIPT_DIR"
+        echo "  cd $REPO_ROOT"
         echo "  ./setup_symlinks.sh"
         echo ""
         info "For now, you can use the scripts from the repository directory:"

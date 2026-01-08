@@ -23,7 +23,7 @@ This document specifies four Git automation scripts for managing repositories ac
 
 2. **Run the installation script:**
    ```bash
-   ./git_install
+   ./scripts/git_install
    ```
    
    This will:

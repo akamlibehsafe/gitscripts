@@ -15,7 +15,7 @@ Installs Git, Git LFS, GitHub CLI, and all necessary dependencies on macOS.
 
 **Usage:**
 ```bash
-./git_install
+./scripts/git_install
 ```
 
 **What it does:**
@@ -30,13 +30,13 @@ Creates a new GitHub repository from a local folder.
 
 **Usage:**
 ```bash
-./git_create_from_local <user/repo>
+./scripts/git_create_from_local <user/repo>
 ```
 
 **Example:**
 ```bash
-./git_create_from_local fortegb/my-new-project
-./git_create_from_local akamlibehsafe/test-repo
+./scripts/git_create_from_local fortegb/my-new-project
+./scripts/git_create_from_local akamlibehsafe/test-repo
 ```
 
 **What it does:**
@@ -50,13 +50,13 @@ Clones an existing GitHub repository to your local machine.
 
 **Usage:**
 ```bash
-./git_create_from_remote <user/repo>
+./scripts/git_create_from_remote <user/repo>
 ```
 
 **Example:**
 ```bash
-./git_create_from_remote fortegb/existing-repo
-./git_create_from_remote akamlibehsafe/my-project
+./scripts/git_create_from_remote fortegb/existing-repo
+./scripts/git_create_from_remote akamlibehsafe/my-project
 ```
 
 **What it does:**
@@ -69,15 +69,15 @@ Commits and pushes changes from a local Git repository.
 
 **Usage:**
 ```bash
-./git_push [directory] [-m "commit message"]
+./scripts/git_push [directory] [-m "commit message"]
 ```
 
 **Examples:**
 ```bash
-./git_push                              # Push from current directory
-./git_push /path/to/repo                 # Push from specified directory
-./git_push -m "Update documentation"     # Push with commit message
-./git_push /path/to/repo -m "Fix bug"   # Push from directory with message
+./scripts/git_push                              # Push from current directory
+./scripts/git_push /path/to/repo                 # Push from specified directory
+./scripts/git_push -m "Update documentation"     # Push with commit message
+./scripts/git_push /path/to/repo -m "Fix bug"   # Push from directory with message
 ```
 
 **What it does:**
@@ -91,7 +91,7 @@ Helper script to verify PAT tokens are configured correctly.
 
 **Usage:**
 ```bash
-./verify_pat.sh
+./scripts/verify_pat.sh
 ```
 
 **What it does:**
@@ -120,7 +120,7 @@ cd gitscripts
 
 **Then run the installation script:**
 ```bash
-./git_install
+./scripts/git_install
 ```
 
 This will:
@@ -158,7 +158,7 @@ This will:
 
 4. **Verify setup:**
    ```bash
-   ./verify_pat.sh
+   ./scripts/verify_pat.sh
    ```
 
 ### 3. Set Up Symlinks to ~/bin/
@@ -201,11 +201,11 @@ mkdir -p ~/bin
 cd /path/to/gitscripts
 
 # Create symlinks
-ln -s "$(pwd)/git_install" ~/bin/git_install
-ln -s "$(pwd)/git_create_from_local" ~/bin/git_create_from_local
-ln -s "$(pwd)/git_create_from_remote" ~/bin/git_create_from_remote
-ln -s "$(pwd)/git_push" ~/bin/git_push
-ln -s "$(pwd)/verify_pat.sh" ~/bin/verify_pat.sh
+ln -s "$(pwd)/scripts/git_install" ~/bin/git_install
+ln -s "$(pwd)/scripts/git_create_from_local" ~/bin/git_create_from_local
+ln -s "$(pwd)/scripts/git_create_from_remote" ~/bin/git_create_from_remote
+ln -s "$(pwd)/scripts/git_push" ~/bin/git_push
+ln -s "$(pwd)/scripts/verify_pat.sh" ~/bin/verify_pat.sh
 
 # Ensure ~/bin is in PATH (add to ~/.bashrc, ~/.bash_profile, or ~/.zshrc)
 export PATH="$HOME/bin:$PATH"
@@ -311,12 +311,17 @@ Comprehensive test scenarios are documented in `TEST_SCENARIOS.md`. All scripts 
 
 ## Files
 
-- `git_install` - Installation script for macOS
-- `git_create_from_local` - Create repository from local folder
-- `git_create_from_remote` - Clone existing repository
-- `git_push` - Commit and push changes
-- `verify_pat.sh` - PAT token verification helper
+### Scripts (in `scripts/` directory)
+- `scripts/git_install` - Installation script for macOS
+- `scripts/git_create_from_local` - Create repository from local folder
+- `scripts/git_create_from_remote` - Clone existing repository
+- `scripts/git_push` - Commit and push changes
+- `scripts/verify_pat.sh` - PAT token verification helper
+
+### Support Scripts
 - `setup_symlinks.sh` - **Setup script to create symlinks in ~/bin/**
+
+### Documentation
 - `TEST_SCENARIOS.md` - Comprehensive test documentation
 - `agents.md` - Detailed specification document
 - `.gitignore` - Git ignore file (excludes PATs.md)
@@ -347,7 +352,7 @@ This project is for personal use. Modify as needed for your requirements.
 
 For issues or questions:
 1. Check `TEST_SCENARIOS.md` for test scenarios
-2. Run `./verify_pat.sh` to check PAT configuration
+2. Run `./scripts/verify_pat.sh` to check PAT configuration
 3. Review error messages for specific troubleshooting tips
 
 ---

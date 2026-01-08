@@ -8,7 +8,7 @@ Before running tests, ensure:
 - PAT variables are set: `GH_TOKEN_fortegb` and `GH_TOKEN_akamlibehsafe`
 - You have access to both GitHub accounts: `fortegb` and `akamlibehsafe`
 - You're running on macOS (for `git_install` tests)
-- All scripts are executable: `chmod +x git_*`
+- All scripts are executable: `chmod +x scripts/git_* scripts/*.sh`
 
 ---
 
@@ -841,7 +841,7 @@ Use this checklist to track completed tests:
 If tests fail:
 1. **Verify PAT tokens are correctly configured:**
    ```bash
-   ./verify_pat.sh
+   ./scripts/verify_pat.sh
    ```
    This will check both PAT tokens and verify they have the correct permissions.
 
@@ -877,7 +877,7 @@ If tests fail:
 5. **Verify PAT belongs to correct account:**
    - The PAT for `GH_TOKEN_fortegb` must be from the `fortegb` account
    - The PAT for `GH_TOKEN_akamlibehsafe` must be from the `akamlibehsafe` account
-   - Use `./verify_pat.sh` to check which account each PAT belongs to
+   - Use `./scripts/verify_pat.sh` to check which account each PAT belongs to
 
 6. **Check network connectivity:**
    ```bash
@@ -886,13 +886,13 @@ If tests fail:
 
 7. **Verify scripts are executable:**
    ```bash
-   ls -l git_*
-   chmod +x git_* verify_pat.sh  # If needed
+   ls -l scripts/git_* scripts/*.sh
+   chmod +x scripts/git_* scripts/*.sh  # If needed
    ```
 
 8. **Check script paths are correct:**
-   - Use absolute paths or ensure scripts are in your PATH
-   - Or run with: `./git_create_from_local` (from the script directory)
+   - Use absolute paths or ensure scripts are in your PATH (via symlinks)
+   - Or run with: `./scripts/git_create_from_local` (from the repository root)
 
 9. **Git safe.directory warning (especially for /tmp directories):**
    - If you see "fatal: detected dubious ownership in repository" error, this is handled automatically

@@ -41,7 +41,7 @@ info "Git Scripts Symlink Setup"
 info "=========================="
 echo ""
 info "This script will create symlinks in ~/bin/ pointing to the scripts in:"
-echo "  $SCRIPT_DIR"
+echo "  $SCRIPT_DIR/scripts"
 echo ""
 
 # Check if ~/bin exists, create if not
@@ -92,7 +92,7 @@ fi
 echo ""
 info "Creating symlinks..."
 
-# List of scripts to symlink
+# List of scripts to symlink (located in scripts/ subdirectory)
 SCRIPTS=(
     "git_install"
     "git_create_from_local"
@@ -106,7 +106,7 @@ SYMLINKS_UPDATED=0
 SYMLINKS_SKIPPED=0
 
 for script in "${SCRIPTS[@]}"; do
-    SCRIPT_PATH="$SCRIPT_DIR/$script"
+    SCRIPT_PATH="$SCRIPT_DIR/scripts/$script"
     SYMLINK_PATH="$HOME/bin/$script"
     
     # Check if script exists in repo
@@ -174,7 +174,7 @@ for script in "${SCRIPTS[@]}"; do
             error "  ✗ $script points to non-existent file"
             ALL_VALID=false
         fi
-    elif [ ! -f "$SCRIPT_DIR/$script" ]; then
+    elif [ ! -f "$SCRIPT_DIR/scripts/$script" ]; then
         # Script doesn't exist in repo, that's okay
         true
     else
