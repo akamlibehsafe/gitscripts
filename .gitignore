@@ -1,0 +1,16 @@
+# Personal Access Tokens - NEVER commit these!
+PATs.md
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Test directories
+/tmp/test-*
+
