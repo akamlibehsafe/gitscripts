@@ -1,3 +1,12 @@
+# QUICK INFO
+
+If dealing with a new installation, download the git_install script by itself and execute it. It will install and configure git on your machine. 
+
+At the end it will also clone the gitscripts repo with the git scripts created to make it easier to work with git.
+
+
+
+
 # Git Automation Scripts
 
 A collection of bash scripts for automating Git and GitHub operations across multiple accounts.

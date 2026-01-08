@@ -399,9 +399,130 @@ echo ""
 success "Installation and setup instructions complete!"
 echo ""
 
+# Clone gitscripts repository and configure PATs
+section "Cloning Git Scripts Repository"
+
+GITSCRIPTS_DIR="$HOME/Documents/GitHub/akamlibehsafe"
+GITSCRIPTS_REPO="$GITSCRIPTS_DIR/gitscripts"
+REPO_URL="https://github.com/akamlibehsafe/gitscripts.git"
+
+# Create the directory if it doesn't exist
+if [ ! -d "$GITSCRIPTS_DIR" ]; then
+    info "Creating directory: $GITSCRIPTS_DIR"
+    mkdir -p "$GITSCRIPTS_DIR" || error "Failed to create directory: $GITSCRIPTS_DIR"
+fi
+
+# Check if repository already exists
+if [ -d "$GITSCRIPTS_REPO" ]; then
+    info "Repository already exists at: $GITSCRIPTS_REPO"
+    prompt "Do you want to update it? (Y/n)"
+    read -r UPDATE_REPO
+    if [[ "$UPDATE_REPO" =~ ^[Nn]$ ]]; then
+        info "Skipping repository clone/update"
+    else
+        info "Updating existing repository..."
+        cd "$GITSCRIPTS_REPO" || error "Failed to change to repository directory"
+        git pull || info "Git pull completed (may have conflicts)"
+        cd - > /dev/null
+        success "Repository updated"
+    fi
+else
+    info "Cloning gitscripts repository to: $GITSCRIPTS_REPO"
+    info "Repository URL: $REPO_URL"
+    echo ""
+    
+    # Try to clone (will work if repo is public, or prompt for credentials if private)
+    if git clone "$REPO_URL" "$GITSCRIPTS_REPO" 2>&1; then
+        success "Repository cloned successfully"
+    else
+        error "Failed to clone repository. You may need to:"
+        echo "  1. Ensure the repository exists and is accessible"
+        echo "  2. Provide credentials if it's a private repository"
+        echo "  3. Clone manually: git clone $REPO_URL $GITSCRIPTS_REPO"
+    fi
+fi
+
+# Configure PATs from PATs.md file
+if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
+    section "Configuring Personal Access Tokens"
+    
+    info "Found PATs.md file. Reading PAT tokens..."
+    PATS_FILE="$GITSCRIPTS_REPO/PATs.md"
+    BASH_PROFILE="$HOME/.bash_profile"
+    
+    # Ensure .bash_profile exists
+    if [ ! -f "$BASH_PROFILE" ]; then
+        info "Creating $BASH_PROFILE"
+        touch "$BASH_PROFILE"
+    fi
+    
+    # Extract PAT exports from PATs.md
+    # Look for lines starting with "export GH_TOKEN_"
+    PAT_EXPORTS=$(grep -E "^export GH_TOKEN_" "$PATS_FILE" 2>/dev/null || echo "")
+    
+    if [ -n "$PAT_EXPORTS" ]; then
+        info "Extracted PAT tokens from PATs.md"
+        echo ""
+        
+        # Check if PATs are already in .bash_profile
+        if grep -q "GH_TOKEN_fortegb\|GH_TOKEN_akamlibehsafe" "$BASH_PROFILE" 2>/dev/null; then
+            prompt "PAT tokens already exist in $BASH_PROFILE"
+            prompt "Do you want to update them? (y/N)"
+            read -r UPDATE_PATS
+            if [[ "$UPDATE_PATS" =~ ^[Yy]$ ]]; then
+                # Remove old PAT exports
+                info "Removing old PAT exports from $BASH_PROFILE"
+                sed -i.bak '/^export GH_TOKEN_/d' "$BASH_PROFILE" 2>/dev/null || \
+                sed -i '' '/^export GH_TOKEN_/d' "$BASH_PROFILE" 2>/dev/null || \
+                info "Note: Could not automatically remove old PATs. Please update manually."
+            else
+                info "Keeping existing PAT configuration"
+                PAT_EXPORTS=""  # Don't add new ones
+            fi
+        fi
+        
+        if [ -n "$PAT_EXPORTS" ]; then
+            # Add PAT exports to .bash_profile
+            info "Adding PAT tokens to $BASH_PROFILE"
+            echo "" >> "$BASH_PROFILE"
+            echo "# Git Automation Scripts - Personal Access Tokens" >> "$BASH_PROFILE"
+            echo "# Added by git_install script on $(date)" >> "$BASH_PROFILE"
+            echo "$PAT_EXPORTS" >> "$BASH_PROFILE"
+            echo "" >> "$BASH_PROFILE"
+            
+            success "PAT tokens added to $BASH_PROFILE"
+            echo ""
+            info "To activate the tokens in this session, run:"
+            echo "  source $BASH_PROFILE"
+            echo ""
+            info "Or restart your terminal."
+        fi
+    else
+        info "No PAT exports found in PATs.md file"
+        info "Please manually add PAT tokens to $BASH_PROFILE"
+    fi
+else
+    info "PATs.md file not found at: $GITSCRIPTS_REPO/PATs.md"
+    info "You will need to manually configure PAT tokens"
+fi
+
 # Check if we're in the gitscripts repository and offer to set up symlinks
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+CURRENT_REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
+
+# Determine which repository to use for symlink setup
+# If we're running from within the repo, use that; otherwise use the cloned repo
+if [ -f "$CURRENT_REPO_ROOT/setup_symlinks.sh" ]; then
+    REPO_ROOT="$CURRENT_REPO_ROOT"
+    info "Using current repository at: $REPO_ROOT"
+elif [ -f "$GITSCRIPTS_REPO/setup_symlinks.sh" ]; then
+    REPO_ROOT="$GITSCRIPTS_REPO"
+    info "Using cloned repository at: $REPO_ROOT"
+else
+    REPO_ROOT="$GITSCRIPTS_REPO"
+    info "Repository will be used from: $REPO_ROOT"
+fi
+
 SETUP_SCRIPT="$REPO_ROOT/setup_symlinks.sh"
 
 if [ -f "$SETUP_SCRIPT" ]; then
