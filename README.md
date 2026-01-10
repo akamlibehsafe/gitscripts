@@ -109,9 +109,31 @@ Helper script to verify PAT tokens are configured correctly.
 - Verifies tokens belong to correct accounts
 - Checks token permissions
 
+### 6. `shell_prompt_setup`
+Installs and configures a beautiful, Git-aware shell prompt with Powerlevel10k theme, iTerm2, and required fonts.
+
+**Usage:**
+```bash
+./scripts/shell_prompt_setup
+```
+
+**What it does:**
+- Installs/verifies iTerm2 terminal emulator (via Homebrew)
+- Configures Zsh as default shell (optional)
+- Installs Oh My Zsh framework
+- Installs Powerlevel10k theme (Git-aware prompt with icons)
+- Installs MesloLGS NF font (Nerd Font with icons)
+- Installs zsh plugins:
+  - `zsh-autosuggestions` - Command autosuggestions
+  - `zsh-syntax-highlighting` - Syntax highlighting
+- Configures `.zshrc` with all components
+- Provides post-installation instructions
+
+**Note:** This script creates a professional development environment with a visually appealing prompt that shows Git branch, status, and other useful information. Perfect for developers who want an enhanced terminal experience.
+
 ## Prerequisites
 
-1. **macOS** (for `git_install` script)
+1. **macOS** (required for `git_install` and `shell_prompt_setup` scripts)
 2. **Personal Access Tokens (PATs)** for both GitHub accounts:
    - `GH_TOKEN_fortegb` - for the `fortegb` account
    - `GH_TOKEN_akamlibehsafe` - for the `akamlibehsafe` account
@@ -215,6 +237,7 @@ ln -s "$(pwd)/scripts/git_create_from_local" ~/bin/git_create_from_local
 ln -s "$(pwd)/scripts/git_create_from_remote" ~/bin/git_create_from_remote
 ln -s "$(pwd)/scripts/git_push" ~/bin/git_push
 ln -s "$(pwd)/scripts/verify_pat.sh" ~/bin/verify_pat.sh
+ln -s "$(pwd)/scripts/shell_prompt_setup" ~/bin/shell_prompt_setup
 
 # Ensure ~/bin is in PATH (add to ~/.bashrc, ~/.bash_profile, or ~/.zshrc)
 export PATH="$HOME/bin:$PATH"
@@ -246,6 +269,15 @@ cd existing-repo
 ```bash
 echo "New content" >> README.md
 git_push -m "Update README"
+```
+
+### Set up a beautiful shell prompt
+```bash
+shell_prompt_setup
+# Follow the instructions to reload your shell
+source ~/.zshrc
+# Optional: Customize the prompt
+p10k configure
 ```
 
 ### Complete workflow
@@ -307,6 +339,16 @@ git_push -m "Add update"
    - This is automatically handled for `/tmp` directories
    - For other directories, add manually: `git config --global --add safe.directory /path/to/dir`
 
+6. **"p10k configure: command not found" error:**
+   - You need to reload your shell configuration first: `source ~/.zshrc`
+   - Or open a new terminal window/tab
+   - The `p10k` command is only available after Powerlevel10k is loaded
+
+7. **"no such file or directory: /Users/.../.oh-my-zsh/oh-my-zsh.sh" error:**
+   - Oh My Zsh installation is incomplete
+   - Re-run `shell_prompt_setup` to fix the installation
+   - The script will detect and fix incomplete installations
+
 ### Verification
 
 Use the verification script to check your setup:
@@ -326,6 +368,7 @@ Comprehensive test scenarios are documented in `TEST_SCENARIOS.md`. All scripts 
 - `scripts/git_create_from_remote` - Clone existing repository
 - `scripts/git_push` - Commit and push changes
 - `scripts/verify_pat.sh` - PAT token verification helper
+- `scripts/shell_prompt_setup` - Install and configure Powerlevel10k shell prompt
 
 ### Support Scripts
 - `setup_symlinks.sh` - **Setup script to create symlinks in ~/bin/**

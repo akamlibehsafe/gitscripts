@@ -99,6 +99,7 @@ SCRIPTS=(
     "git_create_from_remote"
     "git_push"
     "verify_pat.sh"
+    "shell_prompt_setup"
 )
 
 SYMLINKS_CREATED=0
@@ -193,6 +194,7 @@ if [ "$ALL_VALID" = true ]; then
     echo "  git_push [directory] [-m \"message\"]"
     echo "  git_install"
     echo "  verify_pat.sh"
+    echo "  shell_prompt_setup"
     echo ""
     info "Note: If ~/bin was just added to PATH, you may need to:"
     echo "  source $SHELL_CONFIG"
