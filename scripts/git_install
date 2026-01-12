@@ -448,12 +448,14 @@ if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
     
     info "Found PATs.md file. Reading PAT tokens..."
     PATS_FILE="$GITSCRIPTS_REPO/PATs.md"
-    BASH_PROFILE="$HOME/.bash_profile"
     
-    # Ensure .bash_profile exists
-    if [ ! -f "$BASH_PROFILE" ]; then
-        info "Creating $BASH_PROFILE"
-        touch "$BASH_PROFILE"
+    # Use the detected shell configuration file (supports both bash and zsh)
+    # SHELL_CONFIG is already set earlier in the script based on detected shell
+    
+    # Ensure the shell config file exists
+    if [ ! -f "$SHELL_CONFIG" ]; then
+        info "Creating $SHELL_CONFIG"
+        touch "$SHELL_CONFIG"
     fi
     
     # Extract PAT exports from PATs.md
@@ -463,47 +465,89 @@ if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
     if [ -n "$PAT_EXPORTS" ]; then
         info "Extracted PAT tokens from PATs.md"
         echo ""
+        info "Detected shell: $SHELL_NAME"
+        info "Configuration file: $SHELL_CONFIG"
+        echo ""
         
-        # Check if PATs are already in .bash_profile
-        if grep -q "GH_TOKEN_fortegb\|GH_TOKEN_akamlibehsafe" "$BASH_PROFILE" 2>/dev/null; then
-            prompt "PAT tokens already exist in $BASH_PROFILE"
+        # Check if PATs are already in the detected shell config file
+        if grep -q "GH_TOKEN_fortegb\|GH_TOKEN_akamlibehsafe" "$SHELL_CONFIG" 2>/dev/null; then
+            prompt "PAT tokens already exist in $SHELL_CONFIG"
             prompt "Do you want to update them? (y/N)"
             read -r UPDATE_PATS
             if [[ "$UPDATE_PATS" =~ ^[Yy]$ ]]; then
                 # Remove old PAT exports
-                info "Removing old PAT exports from $BASH_PROFILE"
-                sed -i.bak '/^export GH_TOKEN_/d' "$BASH_PROFILE" 2>/dev/null || \
-                sed -i '' '/^export GH_TOKEN_/d' "$BASH_PROFILE" 2>/dev/null || \
-                info "Note: Could not automatically remove old PATs. Please update manually."
+                info "Removing old PAT exports from $SHELL_CONFIG"
+                if [[ "$OSTYPE" == "darwin"* ]]; then
+                    sed -i '' '/^export GH_TOKEN_/d' "$SHELL_CONFIG" 2>/dev/null || \
+                    info "Note: Could not automatically remove old PATs. Please update manually."
+                else
+                    sed -i '/^export GH_TOKEN_/d' "$SHELL_CONFIG" 2>/dev/null || \
+                    info "Note: Could not automatically remove old PATs. Please update manually."
+                fi
             else
                 info "Keeping existing PAT configuration"
                 PAT_EXPORTS=""  # Don't add new ones
             fi
         fi
         
+        # Also check for PATs in the other shell's config file (in case user has both)
+        OTHER_SHELL_CONFIG=""
+        if [[ "$SHELL_NAME" == "zsh" ]]; then
+            # Check bash config files
+            if [ -f "$HOME/.bash_profile" ]; then
+                OTHER_SHELL_CONFIG="$HOME/.bash_profile"
+            elif [ -f "$HOME/.bashrc" ]; then
+                OTHER_SHELL_CONFIG="$HOME/.bashrc"
+            fi
+        elif [[ "$SHELL_NAME" == "bash" ]]; then
+            # Check zsh config file
+            if [ -f "$HOME/.zshrc" ]; then
+                OTHER_SHELL_CONFIG="$HOME/.zshrc"
+            fi
+        fi
+        
+        if [ -n "$OTHER_SHELL_CONFIG" ] && grep -q "GH_TOKEN_fortegb\|GH_TOKEN_akamlibehsafe" "$OTHER_SHELL_CONFIG" 2>/dev/null; then
+            info "Note: PAT tokens also found in $OTHER_SHELL_CONFIG"
+            prompt "Do you want to add PAT tokens to $OTHER_SHELL_CONFIG as well? (y/N)"
+            read -r ADD_TO_OTHER
+            if [[ "$ADD_TO_OTHER" =~ ^[Yy]$ ]]; then
+                # Check if already exists in other file
+                if ! grep -q "GH_TOKEN_fortegb\|GH_TOKEN_akamlibehsafe" "$OTHER_SHELL_CONFIG" 2>/dev/null; then
+                    echo "" >> "$OTHER_SHELL_CONFIG"
+                    echo "# Git Automation Scripts - Personal Access Tokens" >> "$OTHER_SHELL_CONFIG"
+                    echo "# Added by git_install script on $(date)" >> "$OTHER_SHELL_CONFIG"
+                    echo "$PAT_EXPORTS" >> "$OTHER_SHELL_CONFIG"
+                    echo "" >> "$OTHER_SHELL_CONFIG"
+                    success "PAT tokens also added to $OTHER_SHELL_CONFIG"
+                else
+                    info "PAT tokens already exist in $OTHER_SHELL_CONFIG"
+                fi
+            fi
+        fi
+        
         if [ -n "$PAT_EXPORTS" ]; then
-            # Add PAT exports to .bash_profile
-            info "Adding PAT tokens to $BASH_PROFILE"
-            echo "" >> "$BASH_PROFILE"
-            echo "# Git Automation Scripts - Personal Access Tokens" >> "$BASH_PROFILE"
-            echo "# Added by git_install script on $(date)" >> "$BASH_PROFILE"
-            echo "$PAT_EXPORTS" >> "$BASH_PROFILE"
-            echo "" >> "$BASH_PROFILE"
+            # Add PAT exports to the detected shell config file
+            info "Adding PAT tokens to $SHELL_CONFIG"
+            echo "" >> "$SHELL_CONFIG"
+            echo "# Git Automation Scripts - Personal Access Tokens" >> "$SHELL_CONFIG"
+            echo "# Added by git_install script on $(date)" >> "$SHELL_CONFIG"
+            echo "$PAT_EXPORTS" >> "$SHELL_CONFIG"
+            echo "" >> "$SHELL_CONFIG"
             
-            success "PAT tokens added to $BASH_PROFILE"
+            success "PAT tokens added to $SHELL_CONFIG"
             echo ""
             info "To activate the tokens in this session, run:"
-            echo "  source $BASH_PROFILE"
+            echo "  source $SHELL_CONFIG"
             echo ""
             info "Or restart your terminal."
         fi
     else
         info "No PAT exports found in PATs.md file"
-        info "Please manually add PAT tokens to $BASH_PROFILE"
+        info "Please manually add PAT tokens to $SHELL_CONFIG"
     fi
 else
     info "PATs.md file not found at: $GITSCRIPTS_REPO/PATs.md"
-    info "You will need to manually configure PAT tokens"
+    info "You will need to manually configure PAT tokens in $SHELL_CONFIG"
 fi
 
 # Check if we're in the gitscripts repository and offer to set up symlinks

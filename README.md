@@ -170,6 +170,14 @@ This will:
 
 2. **Store PATs in your shell configuration:**
    
+   The `git_install` script automatically detects your shell (bash or zsh) and configures the appropriate file:
+   - **Bash**: Uses `.bash_profile` (or `.bashrc` if `.bash_profile` doesn't exist)
+   - **Zsh**: Uses `.zshrc`
+   
+   If you have a `PATs.md` file in the repository, the script will automatically add the tokens to your shell config file.
+   
+   **Manual configuration:**
+   
    For bash (`.bashrc` or `.bash_profile`):
    ```bash
    export GH_TOKEN_fortegb="your_token_here"
@@ -184,7 +192,9 @@ This will:
 
 3. **Activate the variables:**
    ```bash
-   source ~/.bashrc  # or ~/.zshrc
+   source ~/.bashrc    # for bash
+   source ~/.zshrc     # for zsh
+   # Or simply close and reopen your terminal
    ```
 
 4. **Verify setup:**
