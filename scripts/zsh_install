@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# shell_prompt_setup
+# zsh_install
 # Installs and configures iTerm2, Zsh, Oh My Zsh, Powerlevel10k theme, and MesloLGS NF font
 # to create a beautiful, Git-aware shell prompt with icons.
 

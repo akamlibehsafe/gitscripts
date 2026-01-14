@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# setup_symlinks.sh
+# gitak_setup_symlinks
 # Creates symlinks in ~/bin/ pointing to the git scripts in this repository.
 # This allows you to keep the scripts in the repo folder while using them from anywhere.
 
@@ -94,12 +94,12 @@ info "Creating symlinks..."
 
 # List of scripts to symlink (located in scripts/ subdirectory)
 SCRIPTS=(
-    "git_install"
-    "git_create_from_local"
-    "git_create_from_remote"
-    "git_push"
-    "verify_pat.sh"
-    "shell_prompt_setup"
+    "gitak_install"
+    "gitak_create_from_local"
+    "gitak_create_from_remote"
+    "gitak_push"
+    "gitak_verify_PAT"
+    "zsh_install"
 )
 
 SYMLINKS_CREATED=0
@@ -189,12 +189,12 @@ if [ "$ALL_VALID" = true ]; then
     success "Setup complete! ✓"
     echo ""
     info "You can now use the scripts from anywhere:"
-    echo "  git_create_from_local <user/repo>"
-    echo "  git_create_from_remote <user/repo>"
-    echo "  git_push [directory] [-m \"message\"]"
-    echo "  git_install"
-    echo "  verify_pat.sh"
-    echo "  shell_prompt_setup"
+    echo "  gitak_create_from_local <user/repo>"
+    echo "  gitak_create_from_remote <user/repo>"
+    echo "  gitak_push [directory] [-m \"message\"]"
+    echo "  gitak_install"
+    echo "  gitak_verify_PAT"
+    echo "  zsh_install"
     echo ""
     info "Note: If ~/bin was just added to PATH, you may need to:"
     echo "  source $SHELL_CONFIG"

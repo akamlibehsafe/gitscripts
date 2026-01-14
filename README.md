@@ -1,8 +1,20 @@
 # QUICK INFO
 
-If dealing with a new installation, download the git_install script by itself and execute it. It will install and configure git on your machine. 
+**For a complete fresh installation on macOS:**
 
-At the end it will also clone the gitscripts repo with the git scripts created to make it easier to work with git.
+1. Download this repository as a zip file from GitHub and extract it
+2. Navigate to the `scripts/` folder and run:
+   ```bash
+   chmod +x environment_install
+   ./environment_install
+   ```
+   This will install and configure everything: Git, Zsh, iTerm2, Cursor, and all Git automation scripts.
+
+**For Git-only installation:**
+
+Download the `gitak_install` script by itself and execute it. It will install and configure git on your machine. At the end it will also clone the gitscripts repo with the git scripts created to make it easier to work with git.
+
+**See `README_FIRST.md` for detailed instructions on using `environment_install`.**
 
 
 
@@ -19,12 +31,63 @@ These scripts provide a streamlined workflow for managing GitHub repositories ac
 
 ## Scripts
 
-### 1. `git_install`
+### 0. `environment_install`
+Comprehensive installation script that orchestrates the installation and configuration of all development tools and settings for macOS.
+
+**Usage:**
+```bash
+cd /path/to/extracted/folder/scripts
+chmod +x environment_install
+./environment_install
+```
+
+**What it does:**
+- Handles PAT configuration (asks at the very beginning)
+- Installs/updates Homebrew
+- Sets up Git root directory (`~/Documents/GitHub`)
+- Installs Git, Git LFS, GitHub CLI, and dependencies
+- Automatically clones all repositories from both GitHub accounts (`fortegb` and `akamlibehsafe`)
+- Installs and configures Zsh, Oh My Zsh, Powerlevel10k
+- Optionally installs Cursor Desktop
+- Sets up symlinks for all Git automation scripts
+- Adds useful aliases (cdg, cda, cdf, cds)
+- Configures Powerlevel10k (optional, at the end)
+- Guides through iTerm2 configuration import
+
+**Note:** See `README_FIRST.md` for detailed instructions on prerequisites and usage. The script works when downloaded as a zip file and can be run from any folder.
+
+### 0.5. `environment_uninstall`
+Comprehensive uninstallation script that removes all components installed by `environment_install`.
+
+**Usage:**
+```bash
+cd /path/to/extracted/folder/scripts
+chmod +x environment_uninstall
+./environment_uninstall
+```
+
+**What it does:**
+- Removes symlinks in `~/bin/` (gitak_*, zsh_install)
+- Removes aliases from `~/.zshrc` (cdg, cda, cdf, cds)
+- Uninstalls Cursor Desktop (if installed via Homebrew)
+- Uninstalls Oh My Zsh and Powerlevel10k theme
+- Removes zsh plugins (zsh-autosuggestions, zsh-syntax-highlighting)
+- Removes PATH additions for `~/bin/` from shell configuration
+
+**What it does NOT remove:**
+- Homebrew (system package manager)
+- Git, Git LFS, GitHub CLI (system tools)
+- `~/Documents/GitHub` directory (may contain your repositories)
+- PAT tokens in shell configuration files
+
+**Note:** The script is interactive and will prompt you before removing each component. You can skip any component removal.
+
+### 1. `gitak_install`
 Installs Git, Git LFS, GitHub CLI, and all necessary dependencies on macOS.
 
 **Usage:**
 ```bash
-./scripts/git_install
+./scripts/gitak_install
 ```
 
 **What it does:**
@@ -34,18 +97,18 @@ Installs Git, Git LFS, GitHub CLI, and all necessary dependencies on macOS.
 - Configures Git user settings
 - Provides post-installation instructions for PAT setup
 
-### 2. `git_create_from_local`
+### 2. `gitak_create_from_local`
 Creates a new GitHub repository from a local folder.
 
 **Usage:**
 ```bash
-./scripts/git_create_from_local <user/repo>
+./scripts/gitak_create_from_local <user/repo>
 ```
 
 **Example:**
 ```bash
-./scripts/git_create_from_local fortegb/my-new-project
-./scripts/git_create_from_local akamlibehsafe/test-repo
+./scripts/gitak_create_from_local fortegb/my-new-project
+./scripts/gitak_create_from_local akamlibehsafe/test-repo
 ```
 
 **What it does:**
@@ -54,18 +117,18 @@ Creates a new GitHub repository from a local folder.
 - Stages and commits existing files
 - Pushes to the remote repository
 
-### 3. `git_create_from_remote`
+### 3. `gitak_create_from_remote`
 Clones an existing GitHub repository to your local machine.
 
 **Usage:**
 ```bash
-./scripts/git_create_from_remote <user/repo>
+./scripts/gitak_create_from_remote <user/repo>
 ```
 
 **Example:**
 ```bash
-./scripts/git_create_from_remote fortegb/existing-repo
-./scripts/git_create_from_remote akamlibehsafe/my-project
+./scripts/gitak_create_from_remote fortegb/existing-repo
+./scripts/gitak_create_from_remote akamlibehsafe/my-project
 ```
 
 **What it does:**
@@ -73,20 +136,20 @@ Clones an existing GitHub repository to your local machine.
 - Changes into the cloned directory
 - Handles Git safe.directory configuration for temporary directories
 
-### 4. `git_push`
+### 4. `gitak_push`
 Commits and pushes changes from a local Git repository.
 
 **Usage:**
 ```bash
-./scripts/git_push [directory] [-m "commit message"]
+./scripts/gitak_push [directory] [-m "commit message"]
 ```
 
 **Examples:**
 ```bash
-./scripts/git_push                              # Push from current directory
-./scripts/git_push /path/to/repo                 # Push from specified directory
-./scripts/git_push -m "Update documentation"     # Push with commit message
-./scripts/git_push /path/to/repo -m "Fix bug"   # Push from directory with message
+./scripts/gitak_push                              # Push from current directory
+./scripts/gitak_push /path/to/repo                 # Push from specified directory
+./scripts/gitak_push -m "Update documentation"     # Push with commit message
+./scripts/gitak_push /path/to/repo -m "Fix bug"   # Push from directory with message
 ```
 
 **What it does:**
@@ -95,12 +158,12 @@ Commits and pushes changes from a local Git repository.
 - Creates a commit (prompts for message if not provided)
 - Pushes to remote using appropriate PAT
 
-### 5. `verify_pat.sh`
+### 5. `gitak_verify_PAT`
 Helper script to verify PAT tokens are configured correctly.
 
 **Usage:**
 ```bash
-./scripts/verify_pat.sh
+./scripts/gitak_verify_PAT
 ```
 
 **What it does:**
@@ -109,12 +172,12 @@ Helper script to verify PAT tokens are configured correctly.
 - Verifies tokens belong to correct accounts
 - Checks token permissions
 
-### 6. `shell_prompt_setup`
+### 6. `zsh_install`
 Installs and configures a beautiful, Git-aware shell prompt with Powerlevel10k theme, iTerm2, and required fonts.
 
 **Usage:**
 ```bash
-./scripts/shell_prompt_setup
+./scripts/zsh_install
 ```
 
 **What it does:**
@@ -133,14 +196,46 @@ Installs and configures a beautiful, Git-aware shell prompt with Powerlevel10k t
 
 ## Prerequisites
 
-1. **macOS** (required for `git_install` and `shell_prompt_setup` scripts)
+1. **macOS** (required for `gitak_install` and `zsh_install` scripts)
 2. **Personal Access Tokens (PATs)** for both GitHub accounts:
    - `GH_TOKEN_fortegb` - for the `fortegb` account
    - `GH_TOKEN_akamlibehsafe` - for the `akamlibehsafe` account
 
 ## Setup
 
-### 1. Install Dependencies
+### Option A: Complete Installation (Recommended for Fresh Mac)
+
+**Use `environment_install` for a complete setup:**
+
+1. **Download this repository as a zip file** from GitHub and extract it to any folder
+
+2. **Navigate to the scripts folder and make it executable:**
+   ```bash
+   cd /path/to/extracted/folder/scripts
+   chmod +x environment_install
+   ```
+
+3. **Run the environment installation script:**
+   ```bash
+   ./environment_install
+   ```
+
+   This comprehensive script will:
+   - Handle PAT configuration (asks at the very beginning)
+   - Install Homebrew
+   - Set up Git root directory (`~/Documents/GitHub`)
+   - Install Git, Git LFS, GitHub CLI, and dependencies
+   - Automatically clone all repositories from both GitHub accounts (optional)
+   - Install and configure Zsh, Oh My Zsh, Powerlevel10k
+   - Optionally install Cursor Desktop
+   - Set up symlinks for all scripts
+   - Add useful aliases (cdg, cda, cdf, cds)
+   - Configure Powerlevel10k (optional, at the end)
+   - Guide through iTerm2 configuration import
+
+   **Note:** See `README_FIRST.md` for detailed instructions on prerequisites and usage.
+
+### Option B: Manual Installation (Individual Scripts)
 
 **On a fresh Mac, first clone or download this repository:**
 ```bash
@@ -151,7 +246,7 @@ cd gitscripts
 
 **Then run the installation script:**
 ```bash
-./scripts/git_install
+./scripts/gitak_install
 ```
 
 This will:
@@ -159,7 +254,7 @@ This will:
 - Provide instructions for PAT configuration
 - **Automatically offer to set up symlinks** (if run from the repository directory)
 
-**Note:** If `git_install` detects it's in the gitscripts repository, it will automatically offer to run `setup_symlinks.sh` at the end. You can accept this to complete the setup in one go.
+**Note:** If `gitak_install` detects it's in the gitscripts repository, it will automatically offer to run `gitak_setup_symlinks` at the end. You can accept this to complete the setup in one go.
 
 ### 2. Configure Personal Access Tokens
 
@@ -170,11 +265,11 @@ This will:
 
 2. **Store PATs in your shell configuration:**
    
-   The `git_install` script automatically detects your shell (bash or zsh) and configures the appropriate file:
+   The `gitak_install` script automatically detects your shell (bash or zsh) and configures the appropriate file:
    - **Bash**: Uses `.bash_profile` (or `.bashrc` if `.bash_profile` doesn't exist)
    - **Zsh**: Uses `.zshrc`
    
-   If you have a `PATs.md` file in the repository, the script will automatically add the tokens to your shell config file.
+   If you have a `PAT.md` file in the repository, the script will automatically add the tokens to your shell config file.
    
    **Manual configuration:**
    
@@ -199,7 +294,7 @@ This will:
 
 4. **Verify setup:**
    ```bash
-   ./scripts/verify_pat.sh
+   ./scripts/gitak_verify_PAT
    ```
 
 ### 3. Set Up Symlinks to ~/bin/
@@ -213,7 +308,7 @@ This approach:
 
 **Automatic Setup (Recommended):**
 
-If you ran `git_install` from the repository directory, it will automatically offer to set up symlinks at the end. Simply accept the prompt.
+If you ran `gitak_install` from the repository directory, it will automatically offer to set up symlinks at the end. Simply accept the prompt.
 
 **Manual Setup:**
 
@@ -221,7 +316,7 @@ If you skipped the automatic setup or need to recreate symlinks:
 
 ```bash
 cd /path/to/gitscripts
-./setup_symlinks.sh
+./scripts/gitak_setup_symlinks
 ```
 
 This script will:
@@ -242,12 +337,12 @@ mkdir -p ~/bin
 cd /path/to/gitscripts
 
 # Create symlinks
-ln -s "$(pwd)/scripts/git_install" ~/bin/git_install
-ln -s "$(pwd)/scripts/git_create_from_local" ~/bin/git_create_from_local
-ln -s "$(pwd)/scripts/git_create_from_remote" ~/bin/git_create_from_remote
-ln -s "$(pwd)/scripts/git_push" ~/bin/git_push
-ln -s "$(pwd)/scripts/verify_pat.sh" ~/bin/verify_pat.sh
-ln -s "$(pwd)/scripts/shell_prompt_setup" ~/bin/shell_prompt_setup
+ln -s "$(pwd)/scripts/gitak_install" ~/bin/gitak_install
+ln -s "$(pwd)/scripts/gitak_create_from_local" ~/bin/gitak_create_from_local
+ln -s "$(pwd)/scripts/gitak_create_from_remote" ~/bin/gitak_create_from_remote
+ln -s "$(pwd)/scripts/gitak_push" ~/bin/gitak_push
+ln -s "$(pwd)/scripts/gitak_verify_PAT" ~/bin/gitak_verify_PAT
+ln -s "$(pwd)/scripts/zsh_install" ~/bin/zsh_install
 
 # Ensure ~/bin is in PATH (add to ~/.bashrc, ~/.bash_profile, or ~/.zshrc)
 export PATH="$HOME/bin:$PATH"
@@ -266,24 +361,24 @@ export PATH="$HOME/bin:$PATH"
 ### Create a new repository from local folder
 ```bash
 cd /path/to/my/project
-git_create_from_local fortegb/my-new-repo
+gitak_create_from_local fortegb/my-new-repo
 ```
 
 ### Clone an existing repository
 ```bash
-git_create_from_remote akamlibehsafe/existing-repo
+gitak_create_from_remote akamlibehsafe/existing-repo
 cd existing-repo
 ```
 
 ### Make changes and push
 ```bash
 echo "New content" >> README.md
-git_push -m "Update README"
+gitak_push -m "Update README"
 ```
 
 ### Set up a beautiful shell prompt
 ```bash
-shell_prompt_setup
+zsh_install
 # Follow the instructions to reload your shell
 source ~/.zshrc
 # Optional: Customize the prompt
@@ -296,16 +391,16 @@ p10k configure
 mkdir my-project
 cd my-project
 echo "# My Project" > README.md
-git_create_from_local fortegb/my-project
+gitak_create_from_local fortegb/my-project
 
 # 2. Clone it elsewhere
 cd /tmp
-git_create_from_remote fortegb/my-project
+gitak_create_from_remote fortegb/my-project
 cd my-project
 
 # 3. Make changes and push
 echo "Update" >> README.md
-git_push -m "Add update"
+gitak_push -m "Add update"
 ```
 
 ## Features
@@ -319,7 +414,7 @@ git_push -m "Add update"
 
 ## Security Notes
 
-- **Never commit PAT tokens** - The `PATs.md` file is excluded from version control (see `.gitignore`)
+- **Never commit PAT tokens** - The `PAT.md` file is excluded from version control (see `.gitignore`)
 - **Secure permissions** - Ensure your shell config file has secure permissions: `chmod 600 ~/.bashrc`
 - **Token scope** - Only grant the minimum required scope (`repo`) to your PATs
 - **Token rotation** - Regularly rotate your PAT tokens for security
@@ -356,14 +451,14 @@ git_push -m "Add update"
 
 7. **"no such file or directory: /Users/.../.oh-my-zsh/oh-my-zsh.sh" error:**
    - Oh My Zsh installation is incomplete
-   - Re-run `shell_prompt_setup` to fix the installation
+   - Re-run `zsh_install` to fix the installation
    - The script will detect and fix incomplete installations
 
 ### Verification
 
 Use the verification script to check your setup:
 ```bash
-verify_pat.sh
+gitak_verify_PAT
 ```
 
 ## Testing
@@ -373,20 +468,23 @@ Comprehensive test scenarios are documented in `TEST_SCENARIOS.md`. All scripts 
 ## Files
 
 ### Scripts (in `scripts/` directory)
-- `scripts/git_install` - Installation script for macOS
-- `scripts/git_create_from_local` - Create repository from local folder
-- `scripts/git_create_from_remote` - Clone existing repository
-- `scripts/git_push` - Commit and push changes
-- `scripts/verify_pat.sh` - PAT token verification helper
-- `scripts/shell_prompt_setup` - Install and configure Powerlevel10k shell prompt
+- `scripts/environment_install` - Complete environment installation script (orchestrates all installations)
+- `scripts/environment_uninstall` - Complete environment uninstallation script (removes components installed by environment_install)
+- `scripts/gitak_install` - Installation script for macOS (Git tools only)
+- `scripts/gitak_create_from_local` - Create repository from local folder
+- `scripts/gitak_create_from_remote` - Clone existing repository
+- `scripts/gitak_push` - Commit and push changes
+- `scripts/gitak_verify_PAT` - PAT token verification helper
+- `scripts/zsh_install` - Install and configure Powerlevel10k shell prompt
 
 ### Support Scripts
-- `setup_symlinks.sh` - **Setup script to create symlinks in ~/bin/**
+- `gitak_setup_symlinks` - **Setup script to create symlinks in ~/bin/**
 
 ### Documentation
+- `README_FIRST.md` - **Start here!** Instructions for using `environment_install`
 - `TEST_SCENARIOS.md` - Comprehensive test documentation
 - `agents.md` - Detailed specification document
-- `.gitignore` - Git ignore file (excludes PATs.md)
+- `.gitignore` - Git ignore file (excludes PAT.md)
 
 ## Updating Scripts
 
@@ -403,7 +501,7 @@ Since scripts are kept in the repository folder and accessed via symlinks:
 3. **If you need to recreate symlinks** (e.g., after moving the repository):
    ```bash
    cd /path/to/gitscripts
-   ./setup_symlinks.sh
+   ./scripts/gitak_setup_symlinks
    ```
 
 ## License
@@ -414,10 +512,10 @@ This project is for personal use. Modify as needed for your requirements.
 
 For issues or questions:
 1. Check `TEST_SCENARIOS.md` for test scenarios
-2. Run `./scripts/verify_pat.sh` to check PAT configuration
+2. Run `./scripts/gitak_verify_PAT` to check PAT configuration
 3. Review error messages for specific troubleshooting tips
 
 ---
 
-**Note:** These scripts are designed for macOS. For Linux or Windows, you may need to modify the installation script (`git_install`).
+**Note:** These scripts are designed for macOS. For Linux or Windows, you may need to modify the installation script (`gitak_install`).
 

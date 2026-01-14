@@ -1,7 +1,9 @@
 # Git Automation Scripts Specification
 
 ## Overview
-This document specifies four Git automation scripts for managing repositories across two GitHub accounts: `fortegb` and `akamlibehsafe`. Both accounts have Personal Access Tokens (PATs) stored as local bash variables: `GH_TOKEN_akamlibehsafe` and `GH_TOKEN_fortegb`.
+This document specifies the Git automation scripts for managing repositories across two GitHub accounts: `fortegb` and `akamlibehsafe`. Both accounts have Personal Access Tokens (PATs) stored as local bash variables: `GH_TOKEN_akamlibehsafe` and `GH_TOKEN_fortegb`.
+
+The repository includes an orchestration script `environment_install` that installs and configures all development tools and settings, including Git, Zsh, iTerm2, Cursor, and the Git automation scripts themselves.
 
 ## Installation and Setup
 
@@ -12,7 +14,39 @@ This document specifies four Git automation scripts for managing repositories ac
 
 ### Setup Process
 
-**On a Fresh Mac:**
+**On a Fresh Mac (Recommended - Complete Installation):**
+
+**Option A: Use `environment_install` (Complete Setup)**
+
+1. **Download the repository as a zip file** from GitHub and extract it to any folder
+
+2. **Make the script executable:**
+   ```bash
+   cd /path/to/extracted/folder/scripts
+   chmod +x environment_install
+   ```
+
+3. **Run the environment installation script:**
+   ```bash
+   ./environment_install
+   ```
+   
+   This comprehensive script will:
+   - Handle PAT configuration (asks at the very beginning)
+   - Install Homebrew
+   - Set up Git root directory (`~/Documents/GitHub`)
+   - Install Git, Git LFS, GitHub CLI, and dependencies
+   - Automatically clone all repositories from both GitHub accounts (optional)
+   - Install and configure Zsh, Oh My Zsh, Powerlevel10k
+   - Optionally install Cursor Desktop
+   - Set up symlinks for all scripts
+   - Add useful aliases (cdg, cda, cdf, cds)
+   - Configure Powerlevel10k (optional, at the end)
+   - Guide through iTerm2 configuration import
+   
+   **Note:** See `README_FIRST.md` for detailed instructions on using `environment_install`.
+
+**Option B: Manual Setup (Individual Scripts)**
 
 1. **Clone the repository:**
    ```bash
@@ -23,7 +57,7 @@ This document specifies four Git automation scripts for managing repositories ac
 
 2. **Run the installation script:**
    ```bash
-   ./scripts/git_install
+   ./scripts/gitak_install
    ```
    
    This will:
@@ -35,7 +69,7 @@ This document specifies four Git automation scripts for managing repositories ac
 
 3. **If you skipped symlink setup, run manually:**
    ```bash
-   ./setup_symlinks.sh
+   ./scripts/gitak_setup_symlinks
    ```
    
    This script will:
@@ -67,7 +101,7 @@ Symlinks automatically point to the updated scripts - no re-setup needed!
 ### Script Location
 - **Repository location:** `/path/to/gitscripts/` (where scripts are stored)
 - **Symlink location:** `~/bin/` (where scripts are accessed from)
-- **Usage:** Scripts are called by name (e.g., `git_create_from_local`) assuming `~/bin/` is in PATH
+- **Usage:** Scripts are called by name (e.g., `gitak_create_from_local`) assuming `~/bin/` is in PATH
 
 ## Authentication
 - **Account 1**: `fortegb` → PAT variable: `GH_TOKEN_fortegb`
@@ -76,14 +110,167 @@ Symlinks automatically point to the updated scripts - no re-setup needed!
 
 ---
 
-## Script 1: `git_create_from_local`
+## Script 0: `environment_install`
+
+### Purpose
+Comprehensive installation script that orchestrates the installation and configuration of all development tools and settings for macOS. This script installs Homebrew, Git, Git LFS, GitHub CLI, Zsh, Oh My Zsh, Powerlevel10k, iTerm2 configuration, Cursor Desktop (optional), automatically clones all repositories from both GitHub accounts, and sets up all Git automation scripts with symlinks.
+
+### Usage
+```bash
+./scripts/environment_install
+```
+
+### Parameters
+- None required
+
+### Execution Context
+- Can be run from any folder (works with zip-extracted folders)
+- Run from the directory containing the script (typically `scripts/` folder)
+- Script must be made executable first: `chmod +x environment_install`
+- Requires administrator privileges (may prompt for password)
+
+### Behavior
+1. **PAT Configuration (First Step)**:
+   - Ask if user has PATs generated
+   - If yes: Ask for PAT filename (default: `PAT.md`), check script directory, current directory, or parent directory
+   - If no: Provide detailed instructions for generating PATs (Classic version, no expiration, all scopes checked)
+   - PAT.md file should ideally be in the same folder as the script
+
+2. **Homebrew Installation**:
+   - Check if Homebrew is installed
+   - If not, install Homebrew
+   - Update Homebrew if already installed
+
+3. **Git Root Directory Setup**:
+   - Create `~/Documents/GitHub` directory if it doesn't exist
+
+4. **Git, Git LFS, GitHub CLI Installation**:
+   - Run `gitak_install` script to install Git tools
+   - This will also clone the gitscripts repository to `~/Documents/GitHub/akamlibehsafe/gitscripts`
+
+5. **Clone All Repositories from GitHub Accounts (Optional)**:
+   - Attempts to load PAT tokens from shell configuration file
+   - Uses GitHub API to detect all repositories for both accounts (`fortegb` and `akamlibehsafe`)
+   - Clones repositories to `~/Documents/GitHub/{username}/` directory
+   - Handles pagination (supports accounts with many repositories)
+   - Skips repositories that are already cloned locally
+   - Requires PAT tokens to be available (will skip if not available)
+   - Prompts user to confirm before cloning
+
+6. **Zsh, Oh My Zsh, Powerlevel10k Installation**:
+   - Run `zsh_install` script to install and configure Zsh environment
+
+7. **Cursor Desktop Installation (Optional)**:
+   - Prompt user if they want to install Cursor Desktop
+   - Install via Homebrew if user confirms
+
+8. **Symlinks Setup**:
+   - Ask if user wants to set up symlinks in `~/bin/`
+   - Create `~/bin/` directory if it doesn't exist (with user confirmation)
+   - Run `gitak_setup_symlinks` to create symlinks for all scripts
+
+9. **Add Useful Aliases**:
+   - Add aliases to `~/.zshrc`:
+     - `alias cdg="cd ~/Documents/GitHub"`
+     - `alias cda="cd ~/Documents/GitHub/akamlibehsafe"`
+     - `alias cdf="cd ~/Documents/GitHub/fortegb"`
+     - `alias cds="cd ~/Documents/GitHub/akamlibehsafe/shutterzilla"`
+
+10. **ZSH Configuration (Last Step)**:
+    - Ask if user wants to configure Powerlevel10k now
+    - If yes: Run `p10k configure`
+    - If no: Inform user they can run `p10k configure` anytime
+
+11. **iTerm2 Configuration Import**:
+    - Ask if user wants to import iTerm2 configuration
+    - Provide instructions for importing `config/iterm2/iTerm2 State.itermexport`
+    - Optionally open Finder to the configuration file location
+
+### Edge Cases
+- Script extracted from zip file (not in git repository) → works correctly
+- PAT.md file not found → script continues, will check after repository is cloned
+- ~/bin directory doesn't exist → prompts user to create it
+- User skips optional components → script continues with remaining components
+- Sub-scripts fail → script captures exit codes and provides clear error messages
+
+### Dependencies
+- macOS (required)
+- Internet connection (for downloading tools and packages)
+- Administrator access (may prompt for password)
+
+---
+
+## Script 0.5: `environment_uninstall`
+
+### Purpose
+Comprehensive uninstallation script that removes all components installed by `environment_install`. This script removes symlinks, aliases, Cursor Desktop (if installed), Oh My Zsh, Powerlevel10k, zsh plugins, and PATH additions. It does NOT remove Homebrew, Git tools, or user directories.
+
+### Usage
+```bash
+./scripts/environment_uninstall
+```
+
+### Parameters
+- None required
+
+### Execution Context
+- Can be run from any folder
+- Run from the directory containing the script (typically `scripts/` folder)
+- Script must be made executable first: `chmod +x environment_uninstall`
+- Interactive script (prompts user before removing components)
+
+### Behavior
+1. **Remove Symlinks**:
+   - Remove symlinks in `~/bin/` for all Git automation scripts
+   - Optionally remove `~/bin/` directory if empty (with user confirmation)
+
+2. **Remove Aliases**:
+   - Remove aliases (cdg, cda, cdf, cds) from `~/.zshrc` that were added by `environment_install`
+
+3. **Uninstall Cursor Desktop**:
+   - Check if Cursor Desktop is installed via Homebrew
+   - Uninstall if user confirms (optional)
+
+4. **Uninstall Oh My Zsh and Powerlevel10k**:
+   - Remove `~/.oh-my-zsh` directory (with user confirmation)
+   - Remove Powerlevel10k theme directory
+   - Backup `.zshrc` before removal
+
+5. **Remove Zsh Plugins**:
+   - Remove zsh-autosuggestions plugin
+   - Remove zsh-syntax-highlighting plugin
+
+6. **Remove PATH Additions**:
+   - Remove PATH additions for `~/bin/` from shell configuration files
+
+### Components NOT Removed
+- Homebrew (system package manager)
+- Git, Git LFS, GitHub CLI (system tools)
+- `~/Documents/GitHub` directory (may contain user repositories)
+- PAT tokens in shell configuration files
+- iTerm2 (if installed)
+
+### Edge Cases
+- Symlinks don't exist → script continues
+- Aliases not found → script continues
+- Oh My Zsh not installed → script continues
+- User skips removal of components → script continues with remaining components
+- Interactive prompts allow user to skip any component removal
+
+### Dependencies
+- macOS (required)
+- User confirmation for each major removal step
+
+---
+
+## Script 1: `gitak_create_from_local`
 
 ### Purpose
 Create a new GitHub repository from a local folder, initialize it, commit existing files, and push to remote.
 
 ### Usage
 ```bash
-git_create_from_local <user/repo>
+gitak_create_from_local <user/repo>
 ```
 
 ### Parameters
@@ -115,14 +302,14 @@ git_create_from_local <user/repo>
 
 ---
 
-## Script 2: `git_create_from_remote`
+## Script 2: `gitak_create_from_remote`
 
 ### Purpose
 Clone an existing GitHub repository to local machine and check it out for editing.
 
 ### Usage
 ```bash
-git_create_from_remote <user/repo>
+gitak_create_from_remote <user/repo>
 ```
 
 ### Parameters
@@ -151,14 +338,14 @@ git_create_from_remote <user/repo>
 
 ---
 
-## Script 3: `git_push`
+## Script 3: `gitak_push`
 
 ### Purpose
 Commit and push changes from a local Git repository, automatically detecting the repository owner.
 
 ### Usage
 ```bash
-git_push [directory]
+gitak_push [directory]
 ```
 
 ### Parameters
@@ -200,14 +387,14 @@ git_push [directory]
 
 ---
 
-## Script 4: `git_install`
+## Script 4: `gitak_install`
 
 ### Purpose
 Install Git, Git LFS (Large File Storage), GitHub CLI (`gh`), and all necessary dependencies on a new Mac computer, then provide instructions for configuring Personal Access Tokens.
 
 ### Usage
 ```bash
-git_install
+gitak_install
 ```
 
 ### Parameters
@@ -379,25 +566,25 @@ The script should output clear instructions for the user to:
 
 ## Testing Scenarios
 
-### Script 1 (`git_create_from_local`)
+### Script 1 (`gitak_create_from_local`)
 - Create repo from empty folder
 - Create repo from folder with files
 - Create repo from folder that's already a git repo
 - Test with both user accounts
 
-### Script 2 (`git_create_from_remote`)
+### Script 2 (`gitak_create_from_remote`)
 - Clone existing public repo
 - Clone existing private repo (with PAT)
 - Handle case where repo already exists locally
 - Test with both user accounts
 
-### Script 3 (`git_push`)
+### Script 3 (`gitak_push`)
 - Push from folder with uncommitted changes
 - Push from folder with no changes
 - Push from folder with remote pointing to different account
 - Test with both user accounts
 
-### Script 4 (`git_install`)
+### Script 4 (`gitak_install`)
 - Fresh Mac installation (no Git, no Git LFS, no Homebrew)
 - Mac with Homebrew but no Git/Git LFS/gh
 - Mac with Git/Git LFS/gh already installed

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# git_install
+# gitak_install
 # Installs Git, Git LFS, GitHub CLI, and all necessary dependencies on a new Mac computer,
 # then provides instructions for configuring Personal Access Tokens.
 
@@ -442,12 +442,12 @@ else
     fi
 fi
 
-# Configure PATs from PATs.md file
-if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
+# Configure PATs from PAT.md file
+if [ -f "$GITSCRIPTS_REPO/PAT.md" ]; then
     section "Configuring Personal Access Tokens"
     
-    info "Found PATs.md file. Reading PAT tokens..."
-    PATS_FILE="$GITSCRIPTS_REPO/PATs.md"
+    info "Found PAT.md file. Reading PAT tokens..."
+    PATS_FILE="$GITSCRIPTS_REPO/PAT.md"
     
     # Use the detected shell configuration file (supports both bash and zsh)
     # SHELL_CONFIG is already set earlier in the script based on detected shell
@@ -458,12 +458,12 @@ if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
         touch "$SHELL_CONFIG"
     fi
     
-    # Extract PAT exports from PATs.md
+    # Extract PAT exports from PAT.md
     # Look for lines starting with "export GH_TOKEN_"
     PAT_EXPORTS=$(grep -E "^export GH_TOKEN_" "$PATS_FILE" 2>/dev/null || echo "")
     
     if [ -n "$PAT_EXPORTS" ]; then
-        info "Extracted PAT tokens from PATs.md"
+        info "Extracted PAT tokens from PAT.md"
         echo ""
         info "Detected shell: $SHELL_NAME"
         info "Configuration file: $SHELL_CONFIG"
@@ -515,7 +515,7 @@ if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
                 if ! grep -q "GH_TOKEN_fortegb\|GH_TOKEN_akamlibehsafe" "$OTHER_SHELL_CONFIG" 2>/dev/null; then
                     echo "" >> "$OTHER_SHELL_CONFIG"
                     echo "# Git Automation Scripts - Personal Access Tokens" >> "$OTHER_SHELL_CONFIG"
-                    echo "# Added by git_install script on $(date)" >> "$OTHER_SHELL_CONFIG"
+                    echo "# Added by gitak_install script on $(date)" >> "$OTHER_SHELL_CONFIG"
                     echo "$PAT_EXPORTS" >> "$OTHER_SHELL_CONFIG"
                     echo "" >> "$OTHER_SHELL_CONFIG"
                     success "PAT tokens also added to $OTHER_SHELL_CONFIG"
@@ -530,7 +530,7 @@ if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
             info "Adding PAT tokens to $SHELL_CONFIG"
             echo "" >> "$SHELL_CONFIG"
             echo "# Git Automation Scripts - Personal Access Tokens" >> "$SHELL_CONFIG"
-            echo "# Added by git_install script on $(date)" >> "$SHELL_CONFIG"
+            echo "# Added by gitak_install script on $(date)" >> "$SHELL_CONFIG"
             echo "$PAT_EXPORTS" >> "$SHELL_CONFIG"
             echo "" >> "$SHELL_CONFIG"
             
@@ -542,11 +542,11 @@ if [ -f "$GITSCRIPTS_REPO/PATs.md" ]; then
             info "Or restart your terminal."
         fi
     else
-        info "No PAT exports found in PATs.md file"
+        info "No PAT exports found in PAT.md file"
         info "Please manually add PAT tokens to $SHELL_CONFIG"
     fi
 else
-    info "PATs.md file not found at: $GITSCRIPTS_REPO/PATs.md"
+    info "PAT.md file not found at: $GITSCRIPTS_REPO/PAT.md"
     info "You will need to manually configure PAT tokens in $SHELL_CONFIG"
 fi
 
@@ -556,10 +556,10 @@ CURRENT_REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd -P)"
 
 # Determine which repository to use for symlink setup
 # If we're running from within the repo, use that; otherwise use the cloned repo
-if [ -f "$CURRENT_REPO_ROOT/setup_symlinks.sh" ]; then
+if [ -f "$CURRENT_REPO_ROOT/scripts/gitak_setup_symlinks" ]; then
     REPO_ROOT="$CURRENT_REPO_ROOT"
     info "Using current repository at: $REPO_ROOT"
-elif [ -f "$GITSCRIPTS_REPO/setup_symlinks.sh" ]; then
+elif [ -f "$GITSCRIPTS_REPO/scripts/gitak_setup_symlinks" ]; then
     REPO_ROOT="$GITSCRIPTS_REPO"
     info "Using cloned repository at: $REPO_ROOT"
 else
@@ -567,7 +567,7 @@ else
     info "Repository will be used from: $REPO_ROOT"
 fi
 
-SETUP_SCRIPT="$REPO_ROOT/setup_symlinks.sh"
+SETUP_SCRIPT="$REPO_ROOT/scripts/gitak_setup_symlinks"
 
 if [ -f "$SETUP_SCRIPT" ]; then
     section "Script Symlink Setup"
@@ -589,19 +589,19 @@ if [ -f "$SETUP_SCRIPT" ]; then
     else
         info "Symlink setup skipped. You can run it later with:"
         echo "  cd $REPO_ROOT"
-        echo "  ./setup_symlinks.sh"
+        echo "  ./scripts/gitak_setup_symlinks"
         echo ""
         info "For now, you can use the scripts from the repository directory:"
     fi
 else
-    info "Note: If you have the gitscripts repository, run setup_symlinks.sh to create symlinks in ~/bin/"
+    info "Note: If you have the gitscripts repository, run scripts/gitak_setup_symlinks to create symlinks in ~/bin/"
     echo ""
     info "You can use the Git automation scripts:"
 fi
 
-echo "  • git_create_from_local <user/repo>"
-echo "  • git_create_from_remote <user/repo>"
-echo "  • git_push [directory]"
+echo "  • gitak_create_from_local <user/repo>"
+echo "  • gitak_create_from_remote <user/repo>"
+echo "  • gitak_push [directory]"
 echo ""
 success "Happy coding! 🚀"
 
