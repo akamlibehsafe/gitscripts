@@ -1,0 +1,26 @@
+- Run all in one script
+- Had to run setup_symlinks manually
+- There was no ˜/bin on $PATH
+- Insrruction to Create and download PATs
+
+
+
+- Run Shell Prompt Setup
+
+- Run pk10 configure
+
+
+
+## fortegb Token (Classic)
+export GH_TOKEN_fortegb="your_token_here"
+
+## akamlibehsafe Token (Classic)
+export GH_TOKEN_akamlibehsafe="your_token_here"
+
+##bin path
+export PATH=$PATH|~/bin
+
+
+Install Cursor AI
+
+curl https://cursor.com/install -fsS | bash
