@@ -58,12 +58,12 @@ echo "  • PAT tokens from shell configuration files"
 echo "  • Symlinks in ~/bin/ (gitak_*, zsh_install)"
 echo "  • Aliases in ~/.zshrc (cdg, cda, cdf, cds)"
 echo "  • Cursor Desktop (if installed via Homebrew)"
+echo "  • iTerm2 (if installed via Homebrew)"
 echo "  • Oh My Zsh and Powerlevel10k theme"
 echo "  • Zsh plugins (zsh-autosuggestions, zsh-syntax-highlighting)"
 echo ""
 info "This script will NOT remove:"
 echo "  • Homebrew (system package manager)"
-echo "  • iTerm2 (if installed)"
 echo ""
 prompt "Continue with complete uninstallation? (y/N)"
 read -r CONFIRM
@@ -356,7 +356,43 @@ else
     info "Homebrew not found. Cannot check for Cursor Desktop installation."
 fi
 
-section "Step 5: Uninstall Git, Git LFS, and GitHub CLI"
+section "Step 5: Uninstall iTerm2"
+
+if command -v brew &> /dev/null; then
+    if brew list --cask iterm2 &>/dev/null 2>&1 || [ -d "/Applications/iTerm.app" ]; then
+        prompt "iTerm2 is installed. Uninstall it? (Y/n)"
+        read -r UNINSTALL_ITERM2
+        
+        if [[ ! "$UNINSTALL_ITERM2" =~ ^[Nn]$ ]]; then
+            info "Uninstalling iTerm2..."
+            if brew list --cask iterm2 &>/dev/null 2>&1; then
+                if brew uninstall --cask iterm2 2>/dev/null; then
+                    success "iTerm2 uninstalled successfully"
+                else
+                    info "Failed to uninstall iTerm2 via Homebrew (may require manual removal)"
+                fi
+            else
+                info "iTerm2 not installed via Homebrew, but found in /Applications/iTerm.app"
+                info "You may need to manually remove it from /Applications/iTerm.app"
+            fi
+        else
+            info "iTerm2 uninstallation skipped"
+        fi
+    else
+        info "iTerm2 not found (not installed via Homebrew or not in /Applications)"
+    fi
+else
+    info "Homebrew not found. Cannot check for iTerm2 installation."
+    if [ -d "/Applications/iTerm.app" ]; then
+        prompt "iTerm2 found in /Applications/iTerm.app. Remove it manually? (y/N)"
+        read -r REMOVE_ITERM2_MANUAL
+        if [[ "$REMOVE_ITERM2_MANUAL" =~ ^[Yy]$ ]]; then
+            info "To remove iTerm2 manually, run: rm -rf /Applications/iTerm.app"
+        fi
+    fi
+fi
+
+section "Step 6: Uninstall Git, Git LFS, and GitHub CLI"
 
 if command -v brew &> /dev/null; then
     TOOLS_TO_REMOVE=()
@@ -395,7 +431,7 @@ else
     info "Homebrew not found. Cannot check for Git tools installation."
 fi
 
-section "Step 6: Remove ~/Documents/GitHub Directory"
+section "Step 7: Remove ~/Documents/GitHub Directory"
 
 if [ -d "$GIT_ROOT_DIR" ]; then
     prompt "Remove ~/Documents/GitHub directory and all its contents? (Y/n)"
@@ -413,7 +449,7 @@ else
     info "$GIT_ROOT_DIR directory not found"
 fi
 
-section "Step 7: Uninstall Oh My Zsh and Powerlevel10k"
+section "Step 8: Uninstall Oh My Zsh and Powerlevel10k"
 
 if [ -d "$HOME/.oh-my-zsh" ]; then
     prompt "Oh My Zsh is installed. Uninstall it? (Y/n)"
@@ -466,7 +502,7 @@ else
     info "Powerlevel10k theme not found"
 fi
 
-section "Step 8: Remove Zsh Plugins"
+section "Step 9: Remove Zsh Plugins"
 
 if [ -d "$HOME/.oh-my-zsh/custom/plugins" ]; then
     PLUGINS_REMOVED=0
@@ -500,7 +536,7 @@ else
     info "Zsh plugins directory not found"
 fi
 
-section "Step 9: Remove PATH Addition for ~/bin"
+section "Step 10: Remove PATH Addition for ~/bin"
 
 if [ -f "$SHELL_CONFIG" ]; then
     if grep -q '# Add ~/bin to PATH for git scripts' "$SHELL_CONFIG" 2>/dev/null || \
@@ -540,6 +576,9 @@ echo "  ✓ PAT tokens from shell configuration files"
 if [[ ! "$UNINSTALL_CURSOR" =~ ^[Nn]$ ]] 2>/dev/null; then
     echo "  ✓ Cursor Desktop"
 fi
+if [[ ! "$UNINSTALL_ITERM2" =~ ^[Nn]$ ]] 2>/dev/null; then
+    echo "  ✓ iTerm2"
+fi
 if [[ ! "$UNINSTALL_GIT" =~ ^[Nn]$ ]] 2>/dev/null; then
     echo "  ✓ Git, Git LFS, GitHub CLI"
 fi
@@ -554,7 +593,6 @@ echo ""
 
 info "Components NOT removed:"
 echo "  • Homebrew (system package manager)"
-echo "  • iTerm2 (if installed)"
 echo ""
 
 prompt "Next Steps:"

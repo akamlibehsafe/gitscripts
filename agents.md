@@ -203,7 +203,7 @@ Comprehensive installation script that orchestrates the installation and configu
 ## Script 0.5: `environment_uninstall`
 
 ### Purpose
-Comprehensive uninstallation script that removes all components installed by `environment_install`. This script removes symlinks, aliases, Cursor Desktop (if installed), Oh My Zsh, Powerlevel10k, zsh plugins, and PATH additions. It does NOT remove Homebrew, Git tools, or user directories.
+Comprehensive uninstallation script that removes all components installed by `environment_install`. This script removes symlinks, aliases, Cursor Desktop (if installed), iTerm2 (if installed), Git tools, GitHub directory, PAT tokens, Oh My Zsh, Powerlevel10k, zsh plugins, and PATH additions. It does NOT remove Homebrew (system package manager).
 
 ### Usage
 ```bash
@@ -220,35 +220,53 @@ Comprehensive uninstallation script that removes all components installed by `en
 - Interactive script (prompts user before removing components)
 
 ### Behavior
-1. **Remove Symlinks**:
+1. **Check for Pending Git Changes**:
+   - Scans `~/Documents/GitHub` for Git repositories
+   - Detects uncommitted changes or unpushed commits
+   - Prompts the user to push pending changes and attempts to do so using `gitak_push` or direct `git` commands
+
+2. **Remove Symlinks**:
    - Remove symlinks in `~/bin/` for all Git automation scripts
    - Optionally remove `~/bin/` directory if empty (with user confirmation)
 
-2. **Remove Aliases**:
+3. **Remove Aliases**:
    - Remove aliases (cdg, cda, cdf, cds) from `~/.zshrc` that were added by `environment_install`
 
-3. **Uninstall Cursor Desktop**:
+4. **Remove PAT Tokens from Shell Configuration**:
+   - Iterates through common shell config files (`.zshrc`, `.bashrc`, `.bash_profile`)
+   - Prompts the user to confirm removal of PAT export lines (`export GH_TOKEN_...`)
+   - Uses `sed` to remove these lines
+
+5. **Uninstall Cursor Desktop**:
    - Check if Cursor Desktop is installed via Homebrew
    - Uninstall if user confirms (optional)
 
-4. **Uninstall Oh My Zsh and Powerlevel10k**:
+6. **Uninstall iTerm2**:
+   - Check if iTerm2 is installed via Homebrew Cask or in `/Applications/iTerm.app`
+   - Uninstall if user confirms (optional)
+
+7. **Uninstall Git, Git LFS, and GitHub CLI**:
+   - Check if Git tools are installed via Homebrew
+   - Uninstall if user confirms (optional)
+
+8. **Remove ~/Documents/GitHub Directory**:
+   - Prompts the user to confirm deletion
+   - Uses `rm -rf` to delete the entire directory
+
+9. **Uninstall Oh My Zsh and Powerlevel10k**:
    - Remove `~/.oh-my-zsh` directory (with user confirmation)
    - Remove Powerlevel10k theme directory
    - Backup `.zshrc` before removal
 
-5. **Remove Zsh Plugins**:
-   - Remove zsh-autosuggestions plugin
-   - Remove zsh-syntax-highlighting plugin
+10. **Remove Zsh Plugins**:
+    - Remove zsh-autosuggestions plugin
+    - Remove zsh-syntax-highlighting plugin
 
-6. **Remove PATH Additions**:
-   - Remove PATH additions for `~/bin/` from shell configuration files
+11. **Remove PATH Additions**:
+    - Remove PATH additions for `~/bin/` from shell configuration files
 
 ### Components NOT Removed
 - Homebrew (system package manager)
-- Git, Git LFS, GitHub CLI (system tools)
-- `~/Documents/GitHub` directory (may contain user repositories)
-- PAT tokens in shell configuration files
-- iTerm2 (if installed)
 
 ### Edge Cases
 - Symlinks don't exist → script continues

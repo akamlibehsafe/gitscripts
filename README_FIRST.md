@@ -173,20 +173,22 @@ This repository also includes an `environment_uninstall` script that performs th
 
 The `environment_uninstall` script will **completely remove** all components installed by `environment_install`:
 
-- **Delete the entire `~/Documents/GitHub` directory** and all its contents (including all your cloned repositories from both `fortegb` and `akamlibehsafe` accounts)
-- **Remove Git, Git LFS, and GitHub CLI tools** (uninstalled via Homebrew)
-- **Remove PAT tokens** from shell configuration files (`.zshrc`, `.bashrc`, `.bash_profile`)
-- **Remove symlinks** in `~/bin/` (gitak_*, zsh_install)
-- **Remove aliases** from `~/.zshrc` (cdg, cda, cdf, cds)
-- **Uninstall Cursor Desktop** (if installed via Homebrew)
-- **Uninstall Oh My Zsh and Powerlevel10k theme** (removes `~/.oh-my-zsh` directory)
-- **Remove Zsh plugins** (zsh-autosuggestions, zsh-syntax-highlighting)
-- **Remove PATH additions** for `~/bin/` from shell configuration files
+- **Checks for pending git changes** in `~/Documents/GitHub` and offers to push them before deletion
+- **Removes symlinks** in `~/bin/` (gitak_*, zsh_install)
+- **Removes aliases** from `~/.zshrc` (cdg, cda, cdf, cds)
+- **Removes PAT tokens** from shell configuration files (`.zshrc`, `.bashrc`, `.bash_profile`)
+- **Uninstalls Cursor Desktop** (if installed via Homebrew)
+- **Uninstalls iTerm2** (if installed via Homebrew)
+- **Uninstalls Git, Git LFS, and GitHub CLI tools** (uninstalled via Homebrew)
+- **Deletes the entire `~/Documents/GitHub` directory** and all its contents (including all your cloned repositories from both `fortegb` and `akamlibehsafe` accounts)
+- **Uninstalls Oh My Zsh and Powerlevel10k theme** (removes `~/.oh-my-zsh` directory)
+- **Removes Zsh plugins** (zsh-autosuggestions, zsh-syntax-highlighting)
+- **Removes PATH additions** for `~/bin/` from shell configuration files
 
 **Important Notes**:
 - The script will **check for pending git changes** in `~/Documents/GitHub` and offer to push them before deletion
 - **All local repositories will be permanently deleted** - this cannot be undone
-- The script will **NOT remove**: Homebrew (system package manager) or iTerm2 (if installed)
+- The script will **NOT remove**: Homebrew (system package manager)
 - Use this script only if you want to completely remove everything installed by `environment_install`
 
 For more information about `environment_uninstall`, see `README.md` in the repository.

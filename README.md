@@ -67,18 +67,20 @@ chmod +x environment_uninstall
 ```
 
 **What it does:**
+- Checks for pending git changes in `~/Documents/GitHub` and offers to push them before deletion
 - Removes symlinks in `~/bin/` (gitak_*, zsh_install)
 - Removes aliases from `~/.zshrc` (cdg, cda, cdf, cds)
+- Removes PAT tokens from shell configuration files (`.zshrc`, `.bashrc`, `.bash_profile`)
 - Uninstalls Cursor Desktop (if installed via Homebrew)
+- Uninstalls iTerm2 (if installed via Homebrew)
+- Uninstalls Git, Git LFS, and GitHub CLI (uninstalled via Homebrew)
+- Removes `~/Documents/GitHub` directory and all its contents
 - Uninstalls Oh My Zsh and Powerlevel10k theme
 - Removes zsh plugins (zsh-autosuggestions, zsh-syntax-highlighting)
-- Removes PATH additions for `~/bin/` from shell configuration
+- Removes PATH additions for `~/bin/` from shell configuration files
 
 **What it does NOT remove:**
 - Homebrew (system package manager)
-- Git, Git LFS, GitHub CLI (system tools)
-- `~/Documents/GitHub` directory (may contain your repositories)
-- PAT tokens in shell configuration files
 
 **Note:** The script is interactive and will prompt you before removing each component. You can skip any component removal.
 
