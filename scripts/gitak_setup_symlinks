@@ -100,6 +100,10 @@ SCRIPTS=(
     "gitak_push"
     "gitak_verify_PAT"
     "zsh_install"
+    "doc_new_adr"
+    "doc_update_changelog"
+    "doc_check"
+    "doc_release"
 )
 
 SYMLINKS_CREATED=0

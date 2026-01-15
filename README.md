@@ -482,8 +482,19 @@ Comprehensive test scenarios are documented in `TEST_SCENARIOS.md`. All scripts 
 ### Support Scripts
 - `gitak_setup_symlinks` - **Setup script to create symlinks in ~/bin/**
 
+### Documentation Scripts
+- `doc_new_adr` - Create new Architecture Decision Record template
+- `doc_update_changelog` - Add entries to CHANGELOG.md
+- `doc_check` - Check documentation status and remind about updates
+- `doc_release` - Move unreleased changelog entries to a new version
+
 ### Documentation
 - `README_FIRST.md` - **Start here!** Instructions for using `environment_install`
+- `docs/DOCUMENTATION_WORKFLOW.md` - **How to maintain documentation**
+- `CHANGELOG.md` - Version history and changes
+- `docs/ai-context.md` - AI/contributor briefing
+- `docs/runbook.md` - Operations guide and troubleshooting
+- `docs/decisions/` - Architecture Decision Records (ADRs)
 - `TEST_SCENARIOS.md` - Comprehensive test documentation
 - `agents.md` - Detailed specification document
 - `.gitignore` - Git ignore file (excludes PAT.md)
